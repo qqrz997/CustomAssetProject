@@ -1,0 +1,17 @@
+{
+    "name": "SaberToolkit",
+    "references": [
+        "GUID:ba0410561b1fc5449b5173e5160e704c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
