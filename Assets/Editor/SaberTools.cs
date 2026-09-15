@@ -219,15 +219,16 @@ public class SaberTools : EditorWindow
         saberDescriptor.SaberName = templateText;
         saberDescriptor.AuthorName = Settings.author;
         
-        CreateSaber(ColorType.RightSaber, 0.3f);
-        CreateSaber(ColorType.LeftSaber, -0.3f);
+        CreateSaber(ColorSchemeType.RightSaber, 0.3f);
+        CreateSaber(ColorSchemeType.LeftSaber, -0.3f);
         
-        void CreateSaber(ColorType colorType, float spacing)
+        void CreateSaber(ColorSchemeType colorType, float spacing)
         {
             var go = new GameObject(colorType.ToString());
             go.transform.parent = rootGo.transform;
             go.transform.position = new(spacing, 0, 0);
             CreateTrail(go, colorType);
+            // todo - may want to flip assigned ColorSchemeTypes when using a template
             if (templatePrefab) Instantiate(templatePrefab, go.transform, false);
         }
 
@@ -278,12 +279,12 @@ public class SaberTools : EditorWindow
             new(gizmoWidth, 0.05f, trailWidth));
     }
 
-    private void CreateTrail(GameObject saberGo, ColorType colorType)
+    private void CreateTrail(GameObject saberGo, ColorSchemeType colorSchemeType)
     {
         var trail = saberGo.AddComponent<CustomTrail>();
         trail.material = trailMaterial;
         trail.length = trailLength;
-        trail.colorType = colorType;
+        trail.colorSchemeType = colorSchemeType;
 
         var trailGuides = new GameObject("Trail Guides").transform;
         trailGuides.parent = saberGo.transform;

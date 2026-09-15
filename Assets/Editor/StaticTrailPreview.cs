@@ -57,11 +57,11 @@ public class StaticTrailPreview : UnityEditor.Editor
         vertices[2] = top;
         vertices[3] = top + offset;
 
-        var color = trail.colorType switch
+        var color = trail.colorSchemeType switch
         {
             _ when trail.useTrailColor => trail.trailColor,
-            ColorType.LeftSaber => Settings.customColorLeft,
-            ColorType.RightSaber => Settings.customColorRight,
+            ColorSchemeType.LeftSaber => Settings.customColorLeft,
+            ColorSchemeType.RightSaber => Settings.customColorRight,
             _ => Color.white
         } * trail.multiplierColor;
         for (int i = 0; i < Colors.Length; i++) Colors[i] = color;
