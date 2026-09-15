@@ -18,7 +18,6 @@ internal class SaberProjectSettings : ScriptableObject
     [SerializeField] public bool showTrailGuides = true;
     [SerializeField] public bool showTrailPreview = true;
     [SerializeField] public float trailPreviewLength = 0.3f;
-    [SerializeField] public bool previewTrailColorType = true;
     [SerializeField] public Color customColorLeft = new(0.75f, 0f, 0f);
     [SerializeField] public Color customColorRight = new(0f, 0.42f, 0.75f);
     

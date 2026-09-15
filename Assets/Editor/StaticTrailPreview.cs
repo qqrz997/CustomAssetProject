@@ -43,13 +43,13 @@ public class StaticTrailPreview : UnityEditor.Editor
     private static void DrawGizmo(CustomTrail trail, GizmoType gizmoType)
     {
         if (!Settings.showTrailPreview 
-            || !mesh || !trail.trailMaterial || !trail.pointStart || !trail.pointEnd)
+            || !mesh || !trail.material || !trail.bottom || !trail.top)
         {
             return;
         }
 
-        var bot = trail.pointStart.localPosition;
-        var top = trail.pointEnd.localPosition;
+        var bot = trail.bottom.localPosition;
+        var top = trail.top.localPosition;
 
         var offset = new Vector3(Settings.trailPreviewLength, 0, 0);
         vertices[0] = bot;
@@ -59,17 +59,17 @@ public class StaticTrailPreview : UnityEditor.Editor
 
         var color = trail.colorType switch
         {
-            _ when !Settings.previewTrailColorType => Color.white,
+            _ when trail.useTrailColor => trail.trailColor,
             ColorType.LeftSaber => Settings.customColorLeft,
             ColorType.RightSaber => Settings.customColorRight,
-            _ => trail.trailColor
+            _ => Color.white
         } * trail.multiplierColor;
         for (int i = 0; i < Colors.Length; i++) Colors[i] = color;
 
         UpdateMesh();
 
-        trail.trailMaterial.SetPass(0);
-        Graphics.DrawMeshNow(mesh, trail.pointStart.parent.localToWorldMatrix);
+        trail.material.SetPass(0);
+        Graphics.DrawMeshNow(mesh, trail.bottom.parent.localToWorldMatrix);
     }
 
     private static void UpdateMesh()

@@ -31,8 +31,6 @@ public class EventTester : MonoBehaviour {
         Button("Level Start", LevelStart);
         Button("Level Fail", LevelFail);
         Button("Level Ended", LevelEnded);
-        Button("BlueLightOn", BlueLightOn);
-        Button("RedLightOn", RedLightOn);
         Button("TestCombo", TestCombo);
         GUILayout.BeginHorizontal();
         GUILayout.Label("Combo: ");
@@ -110,22 +108,6 @@ public class EventTester : MonoBehaviour {
         foreach (EventManager manager in managers)
         {
             manager.OnLevelEnded.Invoke();
-        }
-    }
-
-    public void BlueLightOn()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.OnBlueLightOn.Invoke();
-        }
-    }
-
-    public void RedLightOn()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.OnRedLightOn.Invoke();
         }
     }
 

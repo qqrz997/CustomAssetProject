@@ -75,11 +75,6 @@ public class SaberTools : EditorWindow
 
             if (Settings.showTrailPreview)
             {
-                UITools.ChangedToggle(ref Settings.previewTrailColorType, "Use Color Type", val =>
-                {
-                    SceneView.RepaintAll();
-                });
-                
                 var newTrailPreviewLength = EditorGUILayout.Slider("Preview length", Settings.trailPreviewLength, 0, 1);
                 if (!Mathf.Approximately(newTrailPreviewLength, Settings.trailPreviewLength))
                 {
@@ -210,11 +205,8 @@ public class SaberTools : EditorWindow
 
         foreach (var trail in root.GetComponentsInChildren<CustomTrail>())
         {
-            var go = top ? trail.pointEnd : trail.pointStart;
-            if (go)
-            {
-                trails.Add(go.gameObject);
-            }
+            var go = top ? trail.top : trail.bottom;
+            if (go) trails.Add(go.gameObject);
         }
 
         Selection.objects = trails.ToArray();
@@ -272,24 +264,24 @@ public class SaberTools : EditorWindow
         if (Settings.showTrailGuides)
         {
             foreach (var trail in t.GetComponentsInChildren<CustomTrail>())
-                if (trail && trail.pointStart && trail.pointEnd) DrawTrailGizmo(trail);
+                if (trail && trail.bottom && trail.top) DrawTrailGizmo(trail);
         }
         Gizmos.color = Color.white;
     }
 
     private static void DrawTrailGizmo(CustomTrail trail)
     {
-        var trailWidth = trail.pointEnd.position.z - trail.pointStart.position.z;
+        var trailWidth = trail.top.position.z - trail.bottom.position.z;
         var gizmoWidth = Settings.trailPreviewLength;
         Gizmos.DrawWireCube(
-            trail.pointStart.position + new Vector3(0.025f + gizmoWidth / 2, 0, trailWidth/ 2),
+            trail.bottom.position + new Vector3(0.025f + gizmoWidth / 2, 0, trailWidth/ 2),
             new(gizmoWidth, 0.05f, trailWidth));
     }
 
     private void CreateTrail(GameObject saberGo, ColorType colorType)
     {
         var trail = saberGo.AddComponent<CustomTrail>();
-        trail.trailMaterial = trailMaterial;
+        trail.material = trailMaterial;
         trail.length = trailLength;
         trail.colorType = colorType;
 
@@ -305,7 +297,7 @@ public class SaberTools : EditorWindow
         trailGuideBottom.parent = trailGuides;
         trailGuideBottom.localPosition = new(0, 0, SaberLength - SaberOffset - trailWidth);
 
-        trail.pointEnd = trailGuideTop;
-        trail.pointStart = trailGuideBottom;
+        trail.top = trailGuideTop;
+        trail.bottom = trailGuideBottom;
     }
 }
