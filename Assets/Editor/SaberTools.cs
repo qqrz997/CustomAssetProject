@@ -47,14 +47,6 @@ public class SaberTools : EditorWindow
         UITools.Foldout(ref isGuidesOpen);
         if (isGuidesOpen)
         {
-            UITools.Header("Custom Colors");
-            EditorGUILayout.BeginHorizontal();
-            Settings.customColorLeft = EditorGUILayout.ColorField("Left", Settings.customColorLeft);
-            GUILayout.Space(5);
-            Settings.customColorRight = EditorGUILayout.ColorField("Right", Settings.customColorRight);
-            EditorGUILayout.EndHorizontal();
-            
-            GUILayout.Space(10);
             UITools.Header("Guides");
             UITools.ChangedToggle(ref Settings.showSaberGuides, "Sabers Enabled", val =>
             {
@@ -245,15 +237,8 @@ public class SaberTools : EditorWindow
 
         foreach (Transform t in descriptor.transform)
         {
-            switch (t.name)
-            {
-                case "LeftSaber":
-                    DrawSaberGizmo(t, Settings.customColorLeft);
-                    break;
-                case "RightSaber":
-                    DrawSaberGizmo(t, Settings.customColorRight);
-                    break;
-            }
+            if (t.name == "LeftSaber") DrawSaberGizmo(t, Settings.colorScheme.saberAColor);
+            else if (t.name == "RightSaber") DrawSaberGizmo(t, Settings.colorScheme.saberBColor);
         }
     }
 

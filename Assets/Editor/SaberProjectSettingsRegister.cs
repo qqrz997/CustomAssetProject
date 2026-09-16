@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Editor.Models;
 using UnityEditor;
 using UnityEngine;
 
@@ -53,10 +54,54 @@ internal static class SaberProjectSettingsRegister
         EditorGUILayout.EndVertical();
         
         EditorGUILayout.BeginVertical("box");
-        GUILayout.Label("Options", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(settings.FindProperty(nameof(SaberProjectSettings.showOverlay)), new GUIContent("Show Overlay"));
         EditorGUILayout.EndVertical();
-        
-        settings.ApplyModifiedProperties();
+
+        EditorGUILayout.BeginVertical("box");
+        var colorScheme = settings.FindProperty(nameof(SaberProjectSettings.colorScheme));
+        EditorGUILayout.LabelField("Color Scheme", EditorStyles.boldLabel);
+        DrawColorProperty(settings, colorScheme, "saberAColor", MockColorScheme.Default.saberAColor);
+        DrawColorProperty(settings, colorScheme, "saberBColor", MockColorScheme.Default.saberBColor);
+        DrawColorProperty(settings, colorScheme, "obstaclesColor", MockColorScheme.Default.obstaclesColor);
+        DrawColorProperty(settings, colorScheme, "environmentColor0", MockColorScheme.Default.environmentColor0);
+        DrawColorProperty(settings, colorScheme, "environmentColor1", MockColorScheme.Default.environmentColor1);
+        DrawColorProperty(settings, colorScheme, "environmentColorW", MockColorScheme.Default.environmentColorW);
+        DrawColorProperty(settings, colorScheme, "environmentColor0Boost", MockColorScheme.Default.environmentColor0Boost);
+        DrawColorProperty(settings, colorScheme, "environmentColor1Boost", MockColorScheme.Default.environmentColor0Boost);
+        DrawColorProperty(settings, colorScheme, "environmentColorWBoost", MockColorScheme.Default.environmentColor1Boost);
+        EditorGUILayout.EndVertical();
+
+        if (settings.ApplyModifiedProperties())
+        {
+            RefreshOnPropertyChanged();
+        }
+    }
+
+    private static void DrawColorProperty(
+        SerializedObject settings, SerializedProperty colorScheme, string propertyName, Color defaultColor)
+    {
+        var property = colorScheme.FindPropertyRelative(propertyName);
+        var rect = EditorGUILayout.GetControlRect(true, EditorGUI.GetPropertyHeight(property));
+
+        if (Event.current.type != EventType.ContextClick || !rect.Contains(Event.current.mousePosition))
+        {
+            EditorGUI.PropertyField(rect, property);
+            return;
+        }
+
+        var menu = new GenericMenu();
+        menu.AddItem(new("Reset"), false, () =>
+        {
+            Undo.RecordObject(settings.targetObject, $"Reset {property.displayName}");
+            property.colorValue = defaultColor;
+            if (settings.ApplyModifiedProperties()) RefreshOnPropertyChanged();
+        });
+        menu.ShowAsContext();
+        Event.current.Use();
+    }
+
+    private static void RefreshOnPropertyChanged()
+    {
+        MaterialColorerPreviewer.RefreshAll();
     }
 }
