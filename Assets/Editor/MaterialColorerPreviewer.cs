@@ -12,6 +12,7 @@ public class MaterialColorerPreviewer
     {
         Undo.postprocessModifications -= OnPostprocessModifications;
         Undo.postprocessModifications += OnPostprocessModifications;
+        RefreshAll();
     }
 
     public static void RefreshAll()
