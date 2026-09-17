@@ -204,26 +204,17 @@ public class SaberTools : EditorWindow
         Selection.objects = trails.ToArray();
     }
 
-    public void CreateTemplate()
+    private void CreateTemplate()
     {
         var rootGo = new GameObject(templateText);
         var saberDescriptor = rootGo.AddComponent<SaberDescriptor>();
         saberDescriptor.SaberName = templateText;
         saberDescriptor.AuthorName = Settings.author;
         
-        CreateSaber(ColorSchemeType.RightSaber, 0.3f);
-        CreateSaber(ColorSchemeType.LeftSaber, -0.3f);
-        
-        void CreateSaber(ColorSchemeType colorType, float spacing)
-        {
-            var go = new GameObject(colorType.ToString());
-            go.transform.parent = rootGo.transform;
-            go.transform.position = new(spacing, 0, 0);
-            CreateTrail(go, colorType);
-            // todo - may want to flip assigned ColorSchemeTypes when using a template
-            if (templatePrefab) Instantiate(templatePrefab, go.transform, false);
-        }
+        CreateSaber(rootGo.transform, ColorSchemeType.LeftSaber, -0.3f);
+        CreateSaber(rootGo.transform, ColorSchemeType.RightSaber, 0.3f);
 
+        MaterialColorerPreviewer.RefreshAll();
         Selection.activeGameObject = rootGo;
     }
 
@@ -263,16 +254,29 @@ public class SaberTools : EditorWindow
             trail.bottom.position + new Vector3(0.025f + gizmoWidth / 2, 0, trailWidth/ 2),
             new(gizmoWidth, 0.05f, trailWidth));
     }
-
-    private void CreateTrail(GameObject saberGo, ColorSchemeType colorSchemeType)
+        
+    private GameObject CreateSaber(Transform parent, ColorSchemeType colorType, float spacing)
     {
-        var trail = saberGo.AddComponent<CustomTrail>();
-        trail.material = trailMaterial;
-        trail.length = trailLength;
-        trail.colorSchemeType = colorSchemeType;
+        var go = new GameObject(colorType.ToString());
+        go.transform.SetParent(parent, false);
+        go.transform.position = new(spacing, 0, 0);
+        CreateTrail(go, trailMaterial, trailLength, trailWidth, colorType);
+        if (!templatePrefab) return go;
+        var instance = Instantiate(templatePrefab, go.transform, false);
+        if (colorType == ColorSchemeType.RightSaber)
+            foreach (var colorer in instance.GetComponentsInChildren<MaterialColorer>()) colorer.MirrorColorType();
+        return go;
+    }
+
+    private static void CreateTrail(GameObject parent, Material mat, float length, float width, ColorSchemeType type)
+    {
+        var trail = parent.AddComponent<CustomTrail>();
+        trail.material = mat;
+        trail.length = length;
+        trail.colorSchemeType = type;
 
         var trailGuides = new GameObject("Trail Guides").transform;
-        trailGuides.parent = saberGo.transform;
+        trailGuides.parent = parent.transform;
         trailGuides.localPosition = Vector3.zero;
 
         var trailGuideTop = new GameObject("Trail Top").transform;
@@ -281,7 +285,7 @@ public class SaberTools : EditorWindow
 
         var trailGuideBottom = new GameObject("Trail Bottom").transform;
         trailGuideBottom.parent = trailGuides;
-        trailGuideBottom.localPosition = new(0, 0, SaberLength - SaberOffset - trailWidth);
+        trailGuideBottom.localPosition = new(0, 0, SaberLength - SaberOffset - width);
 
         trail.top = trailGuideTop;
         trail.bottom = trailGuideBottom;
