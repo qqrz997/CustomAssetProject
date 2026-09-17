@@ -3,12 +3,12 @@ using Editor.Models;
 using UnityEditor;
 using UnityEngine;
 
-internal static class SaberProjectSettingsRegister
+internal static class ProjectSettingsRegister
 {
     [SettingsProvider]
     public static SettingsProvider CreateSaberProjectSettingsProvider()
     {
-        var provider = new SettingsProvider("Project/BS Model Toolkit", SettingsScope.Project)
+        var provider = new SettingsProvider("Project/BS Asset Project", SettingsScope.Project)
         {
             label = "BS Model Toolkit",
             guiHandler = HandleGui,
@@ -23,14 +23,14 @@ internal static class SaberProjectSettingsRegister
 
     private static void HandleGui(string searchContext)
     {
-        var settings = SaberProjectSettings.GetSerializedSettings();
+        var settings = ProjectSettings.GetSerializedSettings();
         
         EditorGUIUtility.labelWidth = 190;
         
         EditorGUILayout.BeginVertical("box");
         GUILayout.Label("Required", EditorStyles.boldLabel);
         EditorGUILayout.BeginHorizontal();
-        var beatSaberPath = settings.FindProperty(nameof(SaberProjectSettings.beatSaberPath));
+        var beatSaberPath = settings.FindProperty(nameof(ProjectSettings.beatSaberPath));
         EditorGUILayout.PropertyField(beatSaberPath, new GUIContent("Beat Saber Path"));
         if (GUILayout.Button("Browse", EditorStyles.miniButtonLeft, GUILayout.Width(67)))
         {
@@ -41,11 +41,11 @@ internal static class SaberProjectSettingsRegister
             }
         }
         EditorGUILayout.EndHorizontal();
-        EditorGUILayout.PropertyField(settings.FindProperty(nameof(SaberProjectSettings.author)), new GUIContent("Author Name"));
+        EditorGUILayout.PropertyField(settings.FindProperty(nameof(ProjectSettings.author)), new GUIContent("Author Name"));
         EditorGUILayout.EndVertical();
         
         EditorGUILayout.BeginVertical("box");
-        EditorGUILayout.PropertyField(settings.FindProperty(nameof(SaberProjectSettings.exportFilename)), new GUIContent("Export Filename"));
+        EditorGUILayout.PropertyField(settings.FindProperty(nameof(ProjectSettings.exportFilename)), new GUIContent("Export Filename"));
         var labelStyle = new GUIStyle(EditorStyles.label);
         labelStyle.normal.textColor = EditorStyles.label.normal.textColor * 0.9f;
         labelStyle.fontSize = EditorStyles.label.fontSize - 2;
@@ -54,11 +54,11 @@ internal static class SaberProjectSettingsRegister
         EditorGUILayout.EndVertical();
         
         EditorGUILayout.BeginVertical("box");
-        EditorGUILayout.PropertyField(settings.FindProperty(nameof(SaberProjectSettings.showOverlay)), new GUIContent("Show Overlay"));
+        EditorGUILayout.PropertyField(settings.FindProperty(nameof(ProjectSettings.showOverlay)), new GUIContent("Show Overlay"));
         EditorGUILayout.EndVertical();
 
         EditorGUILayout.BeginVertical("box");
-        var colorScheme = settings.FindProperty(nameof(SaberProjectSettings.colorScheme));
+        var colorScheme = settings.FindProperty(nameof(ProjectSettings.colorScheme));
         EditorGUILayout.LabelField("Color Scheme", EditorStyles.boldLabel);
         DrawColorProperty(settings, colorScheme, "saberAColor", MockColorScheme.Default.saberAColor);
         DrawColorProperty(settings, colorScheme, "saberBColor", MockColorScheme.Default.saberBColor);

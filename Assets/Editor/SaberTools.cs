@@ -9,29 +9,20 @@ using Object = UnityEngine.Object;
 
 public class SaberTools : EditorWindow
 {
-    private static SaberProjectSettings Settings => SaberProjectSettings.GetOrCreateSettings();
+    private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
 
     public const float SaberLength = 1.179f;
     private const float SaberOffset = 0.1745f;
-
-    public bool beatSaberLookActive;
 
     private string templateText = "NewSaber";
     private GameObject templatePrefab;
     private Material trailMaterial;
     private float trailLength = 0.4f;
     private float trailWidth = 0.5f;
-
-    private bool isCreateSaberOpen;
-    private bool isGuidesOpen;
-    private bool isFixingOpen;
-    private bool isOtherToolsOpen;
-
+    
     private Vector2 scrollPos = Vector2.zero;
 
-    private SaberDescriptor selectedDescriptor;
-
-    [MenuItem("Window/Saber Project/Saber Tools")]
+    [MenuItem("Window/BS Asset Project/Saber Tools")]
     public static void OpenSaberTools()
     {
         GetWindow<SaberTools>(false, "Saber Tools");
@@ -44,153 +35,64 @@ public class SaberTools : EditorWindow
         scrollPos = GUILayout.BeginScrollView(scrollPos);
 
         UITools.Header("Visuals");
-        UITools.Foldout(ref isGuidesOpen);
-        if (isGuidesOpen)
+        UITools.ChangedToggle(ref Settings.showSaberGuides, "Saber Guides", _ => SceneView.RepaintAll());
+        if (Settings.showSaberGuides) 
+            UITools.ChangedToggle(ref Settings.showTrailGuides, "Trail Guides", _ => SceneView.RepaintAll());
+        
+        GUILayout.Space(10);
+        UITools.Header("Trail Preview");
+        UITools.ChangedToggle(ref Settings.showTrailPreview, "Enabled", _ => SceneView.RepaintAll());
+        if (Settings.showTrailPreview)
         {
-            UITools.Header("Guides");
-            UITools.ChangedToggle(ref Settings.showSaberGuides, "Sabers Enabled", val =>
-            {
-                SceneView.RepaintAll();
-            });
-
-            if (Settings.showSaberGuides) UITools.ChangedToggle(ref Settings.showTrailGuides, "Trails Enabled", val =>
-            {
-                SceneView.RepaintAll();
-            });
-            
-            GUILayout.Space(10);
-            UITools.Header("Trail Preview");
-            UITools.ChangedToggle(ref Settings.showTrailPreview, "Enabled", val =>
-            {
-                SceneView.RepaintAll();
-            });
-
-            if (Settings.showTrailPreview)
-            {
-                var newTrailPreviewLength = EditorGUILayout.Slider("Preview length", Settings.trailPreviewLength, 0, 1);
-                if (!Mathf.Approximately(newTrailPreviewLength, Settings.trailPreviewLength))
-                {
-                    SceneView.RepaintAll();
-                }
-                Settings.trailPreviewLength = newTrailPreviewLength;
-            }
+            var newTrailPreviewLength = EditorGUILayout.Slider("Preview length", Settings.trailPreviewLength, 0, 1);
+            if (!Mathf.Approximately(newTrailPreviewLength, Settings.trailPreviewLength)) SceneView.RepaintAll();
+            Settings.trailPreviewLength = newTrailPreviewLength;
         }
 
         GUILayout.Space(15);
         UITools.Header("Create Saber");
-        UITools.Foldout(ref isCreateSaberOpen);
-        if (isCreateSaberOpen)
+        UITools.Header("General");
+        templateText = EditorGUILayout.TextField("Name", templateText);
+        GUILayout.Space(2);
+        templatePrefab =
+            (GameObject) EditorGUILayout.ObjectField("Template Prefab", templatePrefab, typeof(GameObject), false);
+        GUILayout.Space(5);
+        UITools.Header("Trails");
+        trailMaterial = (Material) EditorGUILayout.ObjectField("Trail Material", trailMaterial, typeof(Material), false);
+        trailLength = EditorGUILayout.Slider("Trail Length", trailLength, 0f, 1f);
+        trailWidth = EditorGUILayout.Slider("Trail Width", trailWidth, 0f, SaberLength);
+        GUILayout.Space(10);
+        if (GUILayout.Button("Create Template", GUILayout.Height(20)))
         {
-            UITools.Header("General");
-            templateText = EditorGUILayout.TextField("Name", templateText);
-            GUILayout.Space(2);
-            templatePrefab =
-                (GameObject) EditorGUILayout.ObjectField("Template Prefab", templatePrefab, typeof(GameObject), false);
-            GUILayout.Space(5);
-            UITools.Header("Trails");
-            trailMaterial = (Material) EditorGUILayout.ObjectField("Trail Material", trailMaterial, typeof(Material), false);
-            trailLength = EditorGUILayout.Slider("Trail Length", trailLength, 0f, 1f);
-            trailWidth = EditorGUILayout.Slider("Trail Width", trailWidth, 0f, SaberLength);
-            GUILayout.Space(10);
-            if (GUILayout.Button("Create Template", GUILayout.Height(20)))
-            {
-                CreateTemplate();
-            }
-        }
-
-        GUILayout.Space(15);
-        UITools.Header("Fixing");
-        UITools.Foldout(ref isFixingOpen);
-        if (isFixingOpen)
-        {
-            if (UITools.Button("Fix Length"))
-            {
-                FixLength();
-            }
+            CreateTemplate();
         }
 
         GUILayout.Space(15);
         UITools.Header("Other tools");
-        UITools.Foldout(ref isOtherToolsOpen);
-        if (isOtherToolsOpen)
+        if (UITools.Button("Select all renderers"))
         {
-            if (UITools.Button("Select all renderers"))
+            var go = Selection.activeGameObject;
+            if (go)
             {
-                var go = Selection.activeGameObject;
-                if (go)
+                var gos = new List<GameObject>();
+                foreach (var meshRenderer in go.GetComponentsInChildren<MeshRenderer>())
                 {
-                    var gos = new List<GameObject>();
-                    foreach (var meshRenderer in go.GetComponentsInChildren<MeshRenderer>())
-                    {
-                        gos.Add(meshRenderer.gameObject);
-                    }
-                    Selection.objects = gos.Cast<Object>().ToArray();
+                    gos.Add(meshRenderer.gameObject);
                 }
-            }
-
-            GUILayout.Space(5);
-            GUILayout.Label("Select trail transform");
-
-            GUILayout.BeginHorizontal();
-            if (UITools.Button("Bottom"))
-            {
-                SelectTrailTransform(Selection.activeGameObject, false);
-            }
-
-            if (UITools.Button("Top"))
-            {
-                SelectTrailTransform(Selection.activeGameObject, true);
-            }
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(10);
-
-            if (UITools.Button("Create spinning anim", 23))
-            {
-                if (Selection.activeGameObject)
-                {
-                    var animCreator = AnimCreatorWindow.Open();
-                    animCreator.Setup(new()
-                    {
-                        GameObject = Selection.activeGameObject
-                    });
-                }
-                else
-                {
-                    SaberProjectOverlay.ShowNotification("Select a gameobject first");
-                }
+                Selection.objects = gos.Cast<Object>().ToArray();
             }
         }
+
+        GUILayout.Space(5);
+        GUILayout.Label("Select trail transform");
+        GUILayout.BeginHorizontal();
+        if (UITools.Button("Bottom")) SelectTrailTransform(Selection.activeGameObject, false);
+        if (UITools.Button("Top")) SelectTrailTransform(Selection.activeGameObject, true);
+        GUILayout.EndHorizontal();
 
         GUILayout.EndScrollView();
     }
-
-    public void OnFocus()
-    {
-        selectedDescriptor = Selection.activeGameObject ? Selection.activeGameObject.GetComponent<SaberDescriptor>() : null;
-    }
-
-    private static void FixLength()
-    {
-        foreach (var gameObject in Selection.gameObjects)
-        {
-            var t = gameObject.transform;
-            var localToWorld = t.localToWorldMatrix;
-            var worldToLocal = t.worldToLocalMatrix;
-
-            var ogScale = Abs(localToWorld.rotation*t.localScale);
-            ogScale.z = 1f;
-            t.localScale = Abs(worldToLocal.rotation * ogScale);
-
-            var bounds = gameObject.GetObjectBounds().extents * 2;
-            var targetZ = SaberLength / bounds.z;
-            ogScale.z = targetZ;
-            t.localScale = Abs(worldToLocal.rotation * ogScale);
-        }
-        return;
-        static Vector3 Abs(Vector3 vec) => new(Mathf.Abs(vec.x), Mathf.Abs(vec.y), Mathf.Abs(vec.z));
-    }
-
+    
     private static void SelectTrailTransform(GameObject root, bool top)
     {
         var trails = new List<GameObject>();
@@ -201,7 +103,7 @@ public class SaberTools : EditorWindow
             if (go) trails.Add(go.gameObject);
         }
 
-        Selection.objects = trails.ToArray();
+        Selection.objects = trails.Cast<Object>().ToArray();
     }
 
     private void CreateTemplate()
@@ -255,17 +157,16 @@ public class SaberTools : EditorWindow
             new(gizmoWidth, 0.05f, trailWidth));
     }
         
-    private GameObject CreateSaber(Transform parent, ColorSchemeType colorType, float spacing)
+    private void CreateSaber(Transform parent, ColorSchemeType colorType, float spacing)
     {
         var go = new GameObject(colorType.ToString());
         go.transform.SetParent(parent, false);
         go.transform.position = new(spacing, 0, 0);
         CreateTrail(go, trailMaterial, trailLength, trailWidth, colorType);
-        if (!templatePrefab) return go;
+        if (!templatePrefab) return;
         var instance = Instantiate(templatePrefab, go.transform, false);
         if (colorType == ColorSchemeType.RightSaber)
             foreach (var colorer in instance.GetComponentsInChildren<MaterialColorer>()) colorer.MirrorColorType();
-        return go;
     }
 
     private static void CreateTrail(GameObject parent, Material mat, float length, float width, ColorSchemeType type)

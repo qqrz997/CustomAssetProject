@@ -16,7 +16,7 @@ public class ModelExporter
 {
     private static string TempDirPath { get; } = Path.Combine(Path.GetTempPath(), "temp_bundles");
     
-    private static SaberProjectSettings Settings => SaberProjectSettings.GetOrCreateSettings();
+    private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
 
     public static void ExportModel(SaberInfo saber)
     {

@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using JetBrains.Annotations;
 using Debug = UnityEngine.Debug;
 
 public class BeatSaberLauncher
 {
-    private static SaberProjectSettings Settings => SaberProjectSettings.GetOrCreateSettings();
+    private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
 
-    [CanBeNull] private static Process console;
-    [CanBeNull] private static Process beatSaber;
+    private static Process console;
+    private static Process beatSaber;
     
     public static bool TryStartBeatSaber(out string message)
     {

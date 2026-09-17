@@ -4,11 +4,11 @@ namespace Editor.Extensions
 {
     internal static class ProjectSettingsExtensions
     {
-        public static bool BeatSaberDirValid(this SaberProjectSettings settings) => 
+        public static bool BeatSaberDirValid(this ProjectSettings settings) => 
             !string.IsNullOrWhiteSpace(settings.beatSaberPath) 
             && File.Exists(Path.Combine(settings.beatSaberPath, "Beat Saber.exe"));
 
-        public static string GetExportFilename(this SaberProjectSettings settings, string saberName)
+        public static string GetExportFilename(this ProjectSettings settings, string saberName)
         {
             var exportName = Path.GetFileNameWithoutExtension(settings.exportFilename);
             exportName = exportName.Replace("{ModelName}", saberName);

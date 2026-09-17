@@ -4,7 +4,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public class SaberProjectOverlay
 {
-    private static SaberProjectSettings Settings => SaberProjectSettings.GetOrCreateSettings();
+    private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
     
     static SaberProjectOverlay()
     {
@@ -17,12 +17,6 @@ public class SaberProjectOverlay
     
     private static SceneView currentSceneView;
     private static Rect windowRect = new(0, 0, WindowWidth, HeaderHeight);
-
-    public static void ShowNotification(string text, float duration = 1f)
-    {
-        currentSceneView.ShowNotification(new(text), duration);
-        SceneView.RepaintAll();
-    }
 
     private static void DrawGUI(SceneView sceneView)
     {
@@ -42,15 +36,21 @@ public class SaberProjectOverlay
     private static void HandleWindowElements()
     {
         if (GUILayout.Button("Settings"))
-            SaberProjectSettings.OpenSettingsScreen();
+            ProjectSettings.OpenSettingsScreen();
         if (GUILayout.Button("Exporter"))
-            SaberExporterEditor.ShowWindow();
+            ModelExporterWindow.ShowWindow();
         if (GUILayout.Button("Saber Tools"))
             SaberTools.OpenSaberTools();
-        GUILayout.Space(10);
         
+        GUILayout.Space(10);
         if (GUILayout.Button("Start BeatSaber") 
             && !BeatSaberLauncher.TryStartBeatSaber(out var message))
             ShowNotification(message, 3);
+    }
+
+    private static void ShowNotification(string text, float duration = 1f)
+    {
+        currentSceneView.ShowNotification(new(text), duration);
+        SceneView.RepaintAll();
     }
 }

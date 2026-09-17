@@ -1,21 +1,20 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using Editor.Extensions;
 using Editor.Models;
 using SaberComponents.Components;
 using UnityEditor;
 using UnityEngine;
 
-public class SaberExporterEditor : EditorWindow
+public class ModelExporterWindow : EditorWindow
 {
     private SaberInfo[] sabers;
     private Vector2 scrollPosition = Vector2.zero;
-    private static SaberProjectSettings Settings => SaberProjectSettings.GetOrCreateSettings();
+    private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
 
-    [MenuItem("Window/Saber Project/BS Model Toolkit")]
+    [MenuItem("Window/BS Asset Project/Exporter")]
     public static void ShowWindow()
     {
-        GetWindow<SaberExporterEditor>(false, "Saber Exporter");
+        GetWindow<ModelExporterWindow>(false, "Exporter");
     }
     
     private void OnFocus()

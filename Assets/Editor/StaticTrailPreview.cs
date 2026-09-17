@@ -1,5 +1,4 @@
 ﻿using SaberComponents.Components;
-using SaberComponents.Models;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +23,7 @@ public class StaticTrailPreview : UnityEditor.Editor
     private static Mesh mesh;
     private static Vector3[] vertices = new Vector3[4];
 
-    private static SaberProjectSettings Settings => SaberProjectSettings.GetOrCreateSettings();
+    private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
     
     public override void OnInspectorGUI()
     {

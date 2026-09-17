@@ -4,33 +4,6 @@ using UnityEngine;
 
 public static class UITools
 {
-    public static readonly GUIStyle SimplePadding;
-
-    static UITools()
-    {
-        GUIStyle boxStyle = "box";
-        boxStyle.padding = new(10, 10, 10, 10);
-
-        SimplePadding = new() { padding = new(10, 10, 10, 10) };
-    }
-
-    public static void BeginSection(Color color)
-    {
-        GUIStyle box = "box";
-        box.padding = new(10, 10, 10, 10);
-
-        GUI.color = color;
-        GUILayout.BeginVertical(box);
-        GUI.color = Color.white;
-        GUILayout.Space(5);
-    }
-
-    public static void EndSection()
-    {
-        GUILayout.Space(5);
-        GUILayout.EndVertical();
-    }
-
     public static void Header(string text, Color? clr = null, float space = 2)
     {
         if (clr.HasValue) GUI.color = clr.Value;
@@ -49,24 +22,6 @@ public static class UITools
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
         GUILayout.Space(space);
-    }
-
-    public static bool FoldoutHeader(bool isOpen, string text, Color clr, float space = 2)
-    {
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        GUI.color = clr;
-        isOpen = EditorGUILayout.Foldout(isOpen, text);
-        GUI.color = Color.white;
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
-        GUILayout.Space(space);
-        return isOpen;
-    }
-
-    public static void Foldout(ref bool isOpen)
-    {
-        isOpen = EditorGUILayout.Foldout(isOpen, isOpen ? "Close" : "Open");
     }
 
     public static void ChangedToggle(ref bool isActive, string text, Action<bool> changedAction)

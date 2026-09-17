@@ -3,7 +3,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
-namespace BeatSaberBloom
+namespace Settings
 {
     /// <summary>Adds the Beat Saber-style bloom pyramid and composite to the Unity Scene view camera.</summary>
     public sealed class BeatSaberBloomRendererFeature : ScriptableRendererFeature
@@ -19,40 +19,40 @@ namespace BeatSaberBloom
         [SerializeField, Range(0f, 3f)] private float baseColorBoost = 1f;
         [SerializeField, Min(0f)] private float baseColorBoostThreshold;
 
-        private Material m_Material;
-        private BloomPass m_Pass;
-        private bool m_Subscribed;
+        private Material material;
+        private BloomPass pass;
+        private bool subscribed;
 
         public override void Create()
         {
-            CoreUtils.Destroy(m_Material);
+            CoreUtils.Destroy(material);
             if (bloomShader != null)
             {
-                m_Material = CoreUtils.CreateEngineMaterial(bloomShader);
+                material = CoreUtils.CreateEngineMaterial(bloomShader);
             }
 
-            m_Pass = new BloomPass(m_Material)
+            pass = new BloomPass(material)
             {
                 renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing
             };
 
-            if (!m_Subscribed)
+            if (!subscribed)
             {
                 RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
                 RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
-                m_Subscribed = true;
+                subscribed = true;
             }
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
-            if (m_Material == null ||
+            if (material == null ||
                 !renderingData.cameraData.isSceneViewCamera)
             {
                 return;
             }
 
-            m_Pass.Setup(
+            pass.Setup(
                 bloomWidth,
                 bloomRadius,
                 bloomIntensity,
@@ -60,18 +60,18 @@ namespace BeatSaberBloom
                 bloomThreshold,
                 baseColorBoost,
                 baseColorBoostThreshold);
-            renderer.EnqueuePass(m_Pass);
+            renderer.EnqueuePass(pass);
         }
 
         protected override void Dispose(bool disposing)
         {
-            CoreUtils.Destroy(m_Material);
-            m_Material = null;
-            if (m_Subscribed)
+            CoreUtils.Destroy(material);
+            material = null;
+            if (subscribed)
             {
                 RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
                 RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
-                m_Subscribed = false;
+                subscribed = false;
             }
 
             Shader.DisableKeyword(MainEffectKeyword);
@@ -104,20 +104,20 @@ namespace BeatSaberBloom
             private static readonly int BaseColorBoostThresholdId = Shader.PropertyToID("_BaseColorBoostThreshold");
             private static readonly int CameraDepthTextureId = Shader.PropertyToID("_BloomCameraDepthTexture");
 
-            private readonly TextureHandle[] m_Down = new TextureHandle[MaxPyramidLevels];
-            private readonly TextureHandle[] m_Up = new TextureHandle[MaxPyramidLevels];
-            private readonly Material m_Material;
-            private int m_BloomWidth;
-            private float m_BloomRadius;
-            private float m_BloomIntensity;
-            private float m_BloomBlend;
-            private float m_BloomThreshold;
-            private float m_BaseColorBoost;
-            private float m_BaseColorBoostThreshold;
+            private readonly TextureHandle[] down = new TextureHandle[MaxPyramidLevels];
+            private readonly TextureHandle[] up = new TextureHandle[MaxPyramidLevels];
+            private readonly Material material;
+            private int bloomWidth;
+            private float bloomRadius;
+            private float bloomIntensity;
+            private float bloomBlend;
+            private float bloomThreshold;
+            private float baseColorBoost;
+            private float baseColorBoostThreshold;
 
             public BloomPass(Material material)
             {
-                m_Material = material;
+                this.material = material;
                 requiresIntermediateTexture = true;
                 ConfigureInput(ScriptableRenderPassInput.Depth);
             }
@@ -131,13 +131,13 @@ namespace BeatSaberBloom
                 float baseColorBoost,
                 float baseColorBoostThreshold)
             {
-                m_BloomWidth = Mathf.Max(1, bloomWidth);
-                m_BloomRadius = Mathf.Clamp(bloomRadius, 0f, 10f);
-                m_BloomIntensity = Mathf.Max(0f, bloomIntensity);
-                m_BloomBlend = Mathf.Clamp01(bloomBlend);
-                m_BloomThreshold = Mathf.Max(0f, bloomThreshold);
-                m_BaseColorBoost = Mathf.Max(0f, baseColorBoost);
-                m_BaseColorBoostThreshold = Mathf.Max(0f, baseColorBoostThreshold);
+                this.bloomWidth = Mathf.Max(1, bloomWidth);
+                this.bloomRadius = Mathf.Clamp(bloomRadius, 0f, 10f);
+                this.bloomIntensity = Mathf.Max(0f, bloomIntensity);
+                this.bloomBlend = Mathf.Clamp01(bloomBlend);
+                this.bloomThreshold = Mathf.Max(0f, bloomThreshold);
+                this.baseColorBoost = Mathf.Max(0f, baseColorBoost);
+                this.baseColorBoostThreshold = Mathf.Max(0f, baseColorBoostThreshold);
             }
 
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
@@ -151,12 +151,12 @@ namespace BeatSaberBloom
                 TextureHandle source = resourceData.activeColorTexture;
                 TextureHandle depth = resourceData.activeDepthTexture;
                 TextureDesc sourceDesc = source.GetDescriptor(renderGraph);
-                int firstWidth = Mathf.Clamp(m_BloomWidth, 1, sourceDesc.width);
+                int firstWidth = Mathf.Clamp(bloomWidth, 1, sourceDesc.width);
                 int firstHeight = Mathf.Max(1, Mathf.RoundToInt(firstWidth * sourceDesc.height / (float)sourceDesc.width));
                 CalculatePyramidParameters(
                     firstWidth,
                     firstHeight,
-                    m_BloomRadius,
+                    bloomRadius,
                     out int levelCount,
                     out float sampleScale);
 
@@ -174,12 +174,12 @@ namespace BeatSaberBloom
                 for (int i = 0; i < levelCount; i++)
                 {
                     bloomDesc.name = $"BeatSaberBloom Down {i}";
-                    m_Down[i] = renderGraph.CreateTexture(bloomDesc);
+                    down[i] = renderGraph.CreateTexture(bloomDesc);
 
                     if (i < levelCount - 1)
                     {
                         bloomDesc.name = $"BeatSaberBloom Up {i}";
-                        m_Up[i] = renderGraph.CreateTexture(bloomDesc);
+                        up[i] = renderGraph.CreateTexture(bloomDesc);
                     }
 
                     bloomDesc.width = Mathf.Max(1, bloomDesc.width >> 1);
@@ -193,31 +193,31 @@ namespace BeatSaberBloom
                 compositeDesc.clearBuffer = false;
                 TextureHandle composite = renderGraph.CreateTexture(compositeDesc);
 
-                using (IUnsafeRenderGraphBuilder builder = renderGraph.AddUnsafePass<PassData>("Beat Saber Bloom", out PassData passData))
+                using (IUnsafeRenderGraphBuilder builder = renderGraph.AddUnsafePass("Beat Saber Bloom", out PassData passData))
                 {
-                    passData.material = m_Material;
-                    passData.source = source;
-                    passData.depth = depth;
-                    passData.composite = composite;
-                    passData.down = m_Down;
-                    passData.up = m_Up;
-                    passData.levelCount = levelCount;
-                    passData.bloomBlend = m_BloomBlend;
-                    passData.alphaWeight = m_BloomThreshold;
-                    passData.pyramidIntensity = m_BloomIntensity;
-                    passData.sampleScale = sampleScale;
-                    passData.baseColorBoost = m_BaseColorBoost;
-                    passData.baseColorBoostThreshold = m_BaseColorBoostThreshold;
+                    passData.Material = material;
+                    passData.Source = source;
+                    passData.Depth = depth;
+                    passData.Composite = composite;
+                    passData.Down = down;
+                    passData.Up = up;
+                    passData.LevelCount = levelCount;
+                    passData.BloomBlend = bloomBlend;
+                    passData.AlphaWeight = bloomThreshold;
+                    passData.PyramidIntensity = bloomIntensity;
+                    passData.SampleScale = sampleScale;
+                    passData.BaseColorBoost = baseColorBoost;
+                    passData.BaseColorBoostThreshold = baseColorBoostThreshold;
 
-                    builder.UseTexture(source, AccessFlags.Read);
-                    builder.UseTexture(depth, AccessFlags.Read);
+                    builder.UseTexture(source);
+                    builder.UseTexture(depth);
                     builder.UseTexture(composite, AccessFlags.Write);
                     for (int i = 0; i < levelCount; i++)
                     {
-                        builder.UseTexture(m_Down[i], AccessFlags.ReadWrite);
+                        builder.UseTexture(down[i], AccessFlags.ReadWrite);
                         if (i < levelCount - 1)
                         {
-                            builder.UseTexture(m_Up[i], AccessFlags.ReadWrite);
+                            builder.UseTexture(up[i], AccessFlags.ReadWrite);
                         }
                     }
 
@@ -246,51 +246,51 @@ namespace BeatSaberBloom
                 const RenderBufferLoadAction loadAction = RenderBufferLoadAction.DontCare;
                 const RenderBufferStoreAction storeAction = RenderBufferStoreAction.Store;
 
-                commandBuffer.SetGlobalFloat(BloomThresholdId, data.alphaWeight);
-                commandBuffer.SetGlobalTexture(CameraDepthTextureId, data.depth);
-                Blitter.BlitCameraTexture(commandBuffer, data.source, data.down[0], loadAction, storeAction, data.material, 0);
+                commandBuffer.SetGlobalFloat(BloomThresholdId, data.AlphaWeight);
+                commandBuffer.SetGlobalTexture(CameraDepthTextureId, data.Depth);
+                Blitter.BlitCameraTexture(commandBuffer, data.Source, data.Down[0], loadAction, storeAction, data.Material, 0);
 
-                for (int i = 1; i < data.levelCount; i++)
+                for (int i = 1; i < data.LevelCount; i++)
                 {
-                    Blitter.BlitCameraTexture(commandBuffer, data.down[i - 1], data.down[i], loadAction, storeAction, data.material, 1);
+                    Blitter.BlitCameraTexture(commandBuffer, data.Down[i - 1], data.Down[i], loadAction, storeAction, data.Material, 1);
                 }
 
-                TextureHandle bloom = data.down[data.levelCount - 1];
-                commandBuffer.SetGlobalFloat(SampleScaleId, data.sampleScale);
-                for (int i = data.levelCount - 2; i >= 0; i--)
+                TextureHandle bloom = data.Down[data.LevelCount - 1];
+                commandBuffer.SetGlobalFloat(SampleScaleId, data.SampleScale);
+                for (int i = data.LevelCount - 2; i >= 0; i--)
                 {
                     commandBuffer.SetGlobalTexture(BloomLowTextureId, bloom);
                     float highWeight = Mathf.Min(
                         1f,
-                        Mathf.Pow(data.pyramidIntensity * (i + 1f) / (data.levelCount - 1f), 0.01f));
+                        Mathf.Pow(data.PyramidIntensity * (i + 1f) / (data.LevelCount - 1f), 0.01f));
                     float lowWeight = Mathf.Min(1f, 2f - highWeight);
                     commandBuffer.SetGlobalVector(BloomCombineId, new Vector4(highWeight, lowWeight, 0f, 0f));
-                    Blitter.BlitCameraTexture(commandBuffer, data.down[i], data.up[i], loadAction, storeAction, data.material, 2);
-                    bloom = data.up[i];
+                    Blitter.BlitCameraTexture(commandBuffer, data.Down[i], data.Up[i], loadAction, storeAction, data.Material, 2);
+                    bloom = data.Up[i];
                 }
 
                 commandBuffer.SetGlobalTexture(BloomLowTextureId, bloom);
-                commandBuffer.SetGlobalFloat(BloomIntensityId, data.bloomBlend);
-                commandBuffer.SetGlobalFloat(BaseColorBoostId, data.baseColorBoost);
-                commandBuffer.SetGlobalFloat(BaseColorBoostThresholdId, data.baseColorBoostThreshold);
-                Blitter.BlitCameraTexture(commandBuffer, data.source, data.composite, loadAction, storeAction, data.material, 3);
+                commandBuffer.SetGlobalFloat(BloomIntensityId, data.BloomBlend);
+                commandBuffer.SetGlobalFloat(BaseColorBoostId, data.BaseColorBoost);
+                commandBuffer.SetGlobalFloat(BaseColorBoostThresholdId, data.BaseColorBoostThreshold);
+                Blitter.BlitCameraTexture(commandBuffer, data.Source, data.Composite, loadAction, storeAction, data.Material, 3);
             }
 
             private sealed class PassData
             {
-                public Material material;
-                public TextureHandle source;
-                public TextureHandle depth;
-                public TextureHandle composite;
-                public TextureHandle[] down;
-                public TextureHandle[] up;
-                public int levelCount;
-                public float bloomBlend;
-                public float alphaWeight;
-                public float pyramidIntensity;
-                public float sampleScale;
-                public float baseColorBoost;
-                public float baseColorBoostThreshold;
+                public Material Material;
+                public TextureHandle Source;
+                public TextureHandle Depth;
+                public TextureHandle Composite;
+                public TextureHandle[] Down;
+                public TextureHandle[] Up;
+                public int LevelCount;
+                public float BloomBlend;
+                public float AlphaWeight;
+                public float PyramidIntensity;
+                public float SampleScale;
+                public float BaseColorBoost;
+                public float BaseColorBoostThreshold;
             }
         }
     }

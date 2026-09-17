@@ -1,12 +1,11 @@
 using SaberComponents.Components;
-using SaberComponents.Models;
 using UnityEditor;
 using UnityEngine;
 
 [InitializeOnLoad]
 public class MaterialColorerPreviewer
 {
-    private static SaberProjectSettings Settings => SaberProjectSettings.GetOrCreateSettings();
+    private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
     
     static MaterialColorerPreviewer()
     {
