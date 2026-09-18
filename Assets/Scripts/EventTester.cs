@@ -11,6 +11,7 @@ public class EventTester : MonoBehaviour
     private List<EveryNthComboFilter> comboNthEvents;
 
     private string comboInput = "0";
+    private bool boostIsOn;
 
     private void Start () 
     {
@@ -37,10 +38,20 @@ public class EventTester : MonoBehaviour
         Button("Level Start", LevelStart);
         Button("Level Fail", LevelFail);
         Button("Level Ended", LevelEnded);
+        
         GUILayout.BeginHorizontal();
         Button("Test Combo", TestCombo);
         comboInput = GUILayout.TextField(comboInput, GUILayout.Width(36));
         GUILayout.EndHorizontal();
+        
+        Button("Start Arcs", ArcsStarted);
+        Button("Stop Arcs", ArcsStopped);
+
+        var oldColor = GUI.backgroundColor;
+        GUI.backgroundColor = boostIsOn ? new(0.6f, 1f, 0.6f) : new(1f, 0.7f, 0.7f);
+        Button("Toggle Boost", ToggleBoost);
+        GUI.backgroundColor = oldColor;
+        
         GUILayout.EndVertical();
     }
 
@@ -59,7 +70,7 @@ public class EventTester : MonoBehaviour
 
     private void LevelStart() { foreach (var manager in managers) manager.levelStarted.Invoke(); }
     private void LevelFail() { foreach (var manager in managers) manager.levelFailed.Invoke(); }
-    private void LevelEnded() { foreach (var manager in managers) manager.onLevelEnded.Invoke(); }
+    private void LevelEnded() { foreach (var manager in managers) manager.levelEnded.Invoke(); }
 
     private void TestCombo()
     {
@@ -79,5 +90,14 @@ public class EventTester : MonoBehaviour
         foreach (var ev in comboNthEvents) 
             if (ev.comboStep == combo) 
                 ev.nthComboReached.Invoke();
+    }
+
+    private void ArcsStarted() { foreach (var manager in managers) manager.arcStartedInteracting.Invoke(); }
+    private void ArcsStopped() { foreach (var manager in managers) manager.arcStoppedInteracting.Invoke(); }
+
+    private void ToggleBoost()
+    {
+        boostIsOn = !boostIsOn;
+        foreach (var manager in managers) manager.boostColorsToggled.Invoke(boostIsOn);
     }
 }
