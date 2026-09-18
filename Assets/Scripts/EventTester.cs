@@ -1,28 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SaberComponents.Components;
 using UnityEngine;
 
-public class EventTester : MonoBehaviour {
+public class EventTester : MonoBehaviour
+{
+    private List<EventManager> managers;
+    private List<ComboReachedEvent> comboNbEvents;
+    private List<EveryNthComboFilter> comboNthEvents;
 
-    List<EventManager> managers;
-    List<ComboReachedEvent> comboNbEvents;
-    List<EveryNthComboFilter> comboNthEvents;
-
-    [HideInInspector] public int combo;
-
-    private string comboStr;
+    private int combo = 0;
 
     private void Start () 
     {
-        managers = new(FindObjectsByType<EventManager>(FindObjectsSortMode.None));
-        comboNbEvents = new(FindObjectsByType<ComboReachedEvent>(FindObjectsSortMode.None));
-        comboNthEvents = new(FindObjectsByType<EveryNthComboFilter>(FindObjectsSortMode.None));
+        managers = FindObjectsByType<EventManager>(FindObjectsSortMode.None).ToList();
+        comboNbEvents = FindObjectsByType<ComboReachedEvent>(FindObjectsSortMode.None).ToList();
+        comboNthEvents = FindObjectsByType<EveryNthComboFilter>(FindObjectsSortMode.None).ToList();
     }
 
     private void OnGUI()
     {
         GUILayout.BeginVertical();
+        
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        GUILayout.Label("Event Tester");
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        
         Button("On Slice", OnSlice);
         Button("Combo Break", ComboBreak);
         Button("Multiplier Up", MultiplierUp);
@@ -31,110 +37,39 @@ public class EventTester : MonoBehaviour {
         Button("Level Start", LevelStart);
         Button("Level Fail", LevelFail);
         Button("Level Ended", LevelEnded);
-        Button("TestCombo", TestCombo);
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Combo: ");
-        comboStr = GUILayout.TextField(comboStr);
-        GUILayout.EndHorizontal();
+        Button("Test Combo", TestCombo);
+        combo = GUILayout.SelectionGrid(combo, new[] { "1", "2", "4", "8" }, 4);
         GUILayout.EndVertical();
     }
 
-    private void Button(string text, Action action)
+    private static void Button(string text, Action action)
     {
-        if (GUILayout.Button(text))
-        {
-            action();
-        }
+        if (GUILayout.Button(text)) action();
     }
 
-    public void OnSlice()
+    private void OnSlice() { foreach(var manager in managers) manager.noteCut.Invoke(); }
+
+    private void ComboBreak() { foreach (var manager in managers) manager.comboBroken.Invoke(); }
+    private void MultiplierUp() { foreach (var manager in managers) manager.multiplierUp.Invoke(); }
+
+    private void StartColliding() { foreach (var manager in managers) manager.saberStartColliding.Invoke(); }
+    private void StopColliding() { foreach (var manager in managers) manager.saberStopColliding.Invoke(); }
+
+    private void LevelStart() { foreach (var manager in managers) manager.levelStarted.Invoke(); }
+    private void LevelFail() { foreach (var manager in managers) manager.levelFailed.Invoke(); }
+    private void LevelEnded() { foreach (var manager in managers) manager.onLevelEnded.Invoke(); }
+
+    private void TestCombo()
     {
-        foreach(EventManager manager in managers)
-        {
-            manager.OnSlice.Invoke();
-        }
-    }
+        foreach (var manager in managers) 
+            manager.comboChanged.Invoke(combo);
 
-    public void ComboBreak()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.OnComboBreak.Invoke();
-        }
-    }
-
-    public void MultiplierUp()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.MultiplierUp.Invoke();
-        }
-    }
-
-    public void StartColliding()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.SaberStartColliding.Invoke();
-        }
-    }
-
-    public void StopColliding()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.SaberStopColliding.Invoke();
-        }
-    }
-
-    public void LevelStart()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.OnLevelStart.Invoke();
-        }
-    }
-
-    public void LevelFail()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.OnLevelFail.Invoke();
-        }
-    }
-
-    public void LevelEnded()
-    {
-        foreach (EventManager manager in managers)
-        {
-            manager.OnLevelEnded.Invoke();
-        }
-    }
-
-    public void TestCombo()
-    {
-        SetCombo(comboStr);
-
-        foreach (EventManager manager in managers)
-        {
-            manager.OnComboChanged.Invoke(combo);
-        }
-
-        foreach (ComboReachedEvent ev in comboNbEvents)
-        {
-            if (ev.comboTarget == combo)
+        foreach (var ev in comboNbEvents) 
+            if (ev.comboTarget == combo) 
                 ev.nthComboReached.Invoke();
-        }
 
-        foreach (EveryNthComboFilter ev in comboNthEvents)
-        {
-            if (ev.comboStep == combo)
+        foreach (var ev in comboNthEvents) 
+            if (ev.comboStep == combo) 
                 ev.nthComboReached.Invoke();
-        }
-    }
-
-    public void SetCombo(string input)
-    {
-        combo = int.Parse(input);
     }
 }
