@@ -51,13 +51,10 @@ public class SaberTools : EditorWindow
 
         GUILayout.Space(15);
         UITools.Header("Create Saber");
-        UITools.Header("General");
         templateText = EditorGUILayout.TextField("Name", templateText);
-        GUILayout.Space(2);
         templatePrefab =
             (GameObject) EditorGUILayout.ObjectField("Template Prefab", templatePrefab, typeof(GameObject), false);
-        GUILayout.Space(5);
-        UITools.Header("Trails");
+        GUILayout.Space(10);
         trailMaterial = (Material) EditorGUILayout.ObjectField("Trail Material", trailMaterial, typeof(Material), false);
         trailLength = EditorGUILayout.Slider("Trail Length", trailLength, 0f, 1f);
         trailWidth = EditorGUILayout.Slider("Trail Width", trailWidth, 0f, SaberLength);
@@ -83,29 +80,9 @@ public class SaberTools : EditorWindow
             }
         }
 
-        GUILayout.Space(5);
-        GUILayout.Label("Select trail transform");
-        GUILayout.BeginHorizontal();
-        if (UITools.Button("Bottom")) SelectTrailTransform(Selection.activeGameObject, false);
-        if (UITools.Button("Top")) SelectTrailTransform(Selection.activeGameObject, true);
-        GUILayout.EndHorizontal();
-
         GUILayout.EndScrollView();
     }
     
-    private static void SelectTrailTransform(GameObject root, bool top)
-    {
-        var trails = new List<GameObject>();
-
-        foreach (var trail in root.GetComponentsInChildren<CustomTrail>())
-        {
-            var go = top ? trail.top : trail.bottom;
-            if (go) trails.Add(go.gameObject);
-        }
-
-        Selection.objects = trails.Cast<Object>().ToArray();
-    }
-
     private void CreateTemplate()
     {
         var rootGo = new GameObject(templateText);
