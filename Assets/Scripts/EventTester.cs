@@ -10,7 +10,7 @@ public class EventTester : MonoBehaviour
     private List<ComboReachedEvent> comboNbEvents;
     private List<EveryNthComboFilter> comboNthEvents;
 
-    private int combo = 0;
+    private string comboInput = "0";
 
     private void Start () 
     {
@@ -37,8 +37,10 @@ public class EventTester : MonoBehaviour
         Button("Level Start", LevelStart);
         Button("Level Fail", LevelFail);
         Button("Level Ended", LevelEnded);
+        GUILayout.BeginHorizontal();
         Button("Test Combo", TestCombo);
-        combo = GUILayout.SelectionGrid(combo, new[] { "1", "2", "4", "8" }, 4);
+        comboInput = GUILayout.TextField(comboInput, GUILayout.Width(36));
+        GUILayout.EndHorizontal();
         GUILayout.EndVertical();
     }
 
@@ -61,6 +63,12 @@ public class EventTester : MonoBehaviour
 
     private void TestCombo()
     {
+        if (!int.TryParse(comboInput, out var combo))
+        {
+            comboInput = "0";
+            return;
+        }
+        
         foreach (var manager in managers) 
             manager.comboChanged.Invoke(combo);
 
