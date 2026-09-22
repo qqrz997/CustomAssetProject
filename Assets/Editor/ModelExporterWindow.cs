@@ -1,14 +1,16 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Editor;
 using Editor.Extensions;
 using Editor.Models;
 using AssetComponents.Components.Sabers;
+using Editor.Common;
 using UnityEditor;
 using UnityEngine;
 
 public class ModelExporterWindow : EditorWindow
 {
-    private SaberInfo[] sabers;
+    private ExportableSaber[] sabers;
     private Vector2 scrollPosition = Vector2.zero;
     private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
 
@@ -21,7 +23,7 @@ public class ModelExporterWindow : EditorWindow
     private void OnFocus()
     {
         sabers = FindObjectsByType<SaberDescriptor>(FindObjectsSortMode.None)
-            .Select(x=>new SaberInfo(x)).ToArray();
+            .Select(x=>new ExportableSaber(x)).ToArray();
     }
     
     private void OnGUI()
@@ -29,39 +31,44 @@ public class ModelExporterWindow : EditorWindow
         if (!InitialValidation()) return;
 
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, false);
-        foreach (var saber in sabers)
+        foreach (var exportableSaber in sabers)
         {
-            var gameObject = saber.GameObject;
-            if (!gameObject) continue;
+            if (!exportableSaber.GameObject)
+            {
+                OnFocus();
+                break;
+            }
 
-            UITools.CenterHeader(gameObject.name, Color.white);
+            UITools.CenterHeader(exportableSaber.GameObject.name, Color.white);
             GUILayout.BeginVertical("box");
 
-            var (cantExport, isWarning) = RunSaberValidation(saber);
-
+            var isWarning = false;
+            foreach (var (msg, clr) in RunSaberValidation(exportableSaber))
+            {
+                isWarning = true;
+                UITools.BoldLabel(msg, clr);
+            }
+            
             GUILayout.Space(5);
-
-            saber.SaberDescriptor.authorName = EditorGUILayout.TextField("Author name", saber.SaberDescriptor.authorName);
-            saber.SaberDescriptor.saberName = EditorGUILayout.TextField("Saber name", saber.SaberDescriptor.saberName);
-
-            EditorGUI.BeginDisabledGroup(!(saber.LeftSaber && saber.RightSaber));
-
+            GUILayout.Label($"Export \"{exportableSaber.Name}\" by {exportableSaber.Author}\"");
+            
+            EditorGUI.BeginDisabledGroup(!exportableSaber.IsReadyForExport);
             GUILayout.Space(5);
             if (GUILayout.Button("Select"))
             {
-                Selection.activeGameObject = saber.GameObject;
+                Selection.activeGameObject = exportableSaber.GameObject;
             }
 
-            GUI.color = (cantExport, isWarning) switch
+            GUI.color = (exportableSaber.IsReadyForExport, isWarning) switch
             {
-                (true, _) => new(0.7f, 0f, 0f),
+                (false, _) => new(0.7f, 0f, 0f),
                 (_, true) => new(0.7f, 0.46f, 0f),
                 _ => new(0.25f, 0.65f, 0.25f)
             };
             if (GUILayout.Button("Export", GUILayout.Height(25)))
             {
                 GUI.color = Color.white;
-                ModelExporter.ExportModel(saber);
+                ModelExporter.ExportAsset(exportableSaber);
             }
             GUI.color = Color.white;
 
@@ -98,70 +105,25 @@ public class ModelExporterWindow : EditorWindow
             return false;
         }
         return true;
-        
     }
 
-    private (bool cantExport, bool isWarning) RunSaberValidation(SaberInfo saber)
+    private static IEnumerable<(string, Color)> RunSaberValidation(ExportableSaber saber)
     {
-        var cantExport = false;
-        var isWarning = false;
-        var saberBounds = saber.Size;
+        if (!saber.IsReadyForExport)
+            yield return (" - LeftSaber gameObject is missing", Color.red);
 
-        if (!saber.LeftSaber)
-        {
-            cantExport = true;
-            GUI.color = Color.red;
-            GUILayout.Label(" - LeftSaber gameObject is missing", EditorStyles.boldLabel);
-            GUI.color = Color.white;
-        }
-
+        var saberBounds = saber.GameObject.GetObjectBounds().extents * 2;
         if (saberBounds.z > SaberTools.SaberLength + 0.1f)
-        {
-            isWarning = true;
-            GUI.color = Color.yellow;
-            GUILayout.Label(" - The saber might be too long", EditorStyles.boldLabel);
-            GUI.color = Color.white;
-        }
-
+            yield return (" - The saber might be too long", Color.yellow);
         if (saberBounds.z < SaberTools.SaberLength - 0.1f)
-        {
-            isWarning = true;
-            GUI.color = Color.yellow;
-            GUILayout.Label(" - The saber might be too short", EditorStyles.boldLabel);
-            GUI.color = Color.white;
-        }
-
+            yield return (" - The saber might be too short", Color.yellow);
         if (saberBounds.x > 1.0)
-        {
-            isWarning = true;
-            GUI.color = Color.yellow;
-            GUILayout.Label(" - The saber might be too large", EditorStyles.boldLabel);
-            GUI.color = Color.white;
-        }
-
+            yield return (" - The saber might be too large", Color.yellow);
         if (saberBounds.x > saberBounds.z || saberBounds.y > saberBounds.z)
-        {
-            isWarning = true;
-            GUI.color = Color.yellow;
-            GUILayout.Label(" - Your saber might be rotated incorrectly", EditorStyles.boldLabel);
-            GUI.color = Color.white;
-        }
-
+            yield return (" - Your saber might be rotated incorrectly", Color.yellow);
         if (!saber.HasTrail)
-        {
-            isWarning = true;
-            GUI.color = Color.yellow;
-            GUILayout.Label(" - Your saber doesn't have any trails", EditorStyles.boldLabel);
-            GUI.color = Color.white;
-        }
-
+            yield return (" - Your saber doesn't have any trails", Color.yellow);
         if (saber.HasSaberTransforms)
-        {
-            isWarning = true;
-            GUI.color = Color.yellow;
-            GUILayout.Label(" - Your Left/Right-Saber gameobject has transforms applied", EditorStyles.boldLabel);
-            GUI.color = Color.white;
-        }
-        return (cantExport, isWarning);
+            yield return (" - Your Left/Right-Saber gameobject has transforms applied", Color.yellow);
     }
 }

@@ -13,7 +13,7 @@ namespace Editor.Extensions
             var exportName = Path.GetFileNameWithoutExtension(settings.exportFilename);
             exportName = exportName.Replace("{ModelName}", saberName);
             exportName = exportName.Replace("{AuthorName}", settings.author);
-            return $"{exportName}.saber2";
+            return exportName;
         }
     }
 }

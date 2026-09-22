@@ -6,21 +6,20 @@ using Editor.Extensions;
 using Editor.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using AssetComponents.Components.Sabers;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Editor
+namespace Editor.Common
 {
-    public class ModelExporter
+    internal static class ModelExporter
     {
         private static string TempDirPath { get; } = Path.Combine(Path.GetTempPath(), "temp_bundles");
     
         private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
 
-        public static void ExportModel(SaberInfo saber)
+        public static void ExportAsset(IExportableAsset asset)
         {
             var tempDir = new DirectoryInfo(TempDirPath);
         
@@ -34,7 +33,7 @@ namespace Editor
                     return;
                 }
 
-                ExportSaber(saber);
+                Export(asset);
             }
             catch (Exception e)
             {
@@ -47,23 +46,22 @@ namespace Editor
             }
         }
     
-        private static void ExportSaber(SaberInfo saber)
+        private static void Export(IExportableAsset asset)
         {
             const string pcAssetFileName = "pc";
             const string metadataFileName = "metadata.json";
             const string imageFileName = "cover.png";
-            const string assetName = "Assets/_CustomSaber.prefab";
-
-            if (!saber.GameObject)
+            
+            if (!asset.GameObject)
             {
-                EditorUtility.DisplayDialog("Exportation Failed!", "Saber GameObject is missing.", "OK");
+                EditorUtility.DisplayDialog("Exportation Failed!", "Asset GameObject is missing.", "OK");
                 return;
             }
 
+            var assetName = $"Assets/{asset.PrefabName}.prefab";
             var warnings = new List<string>();
-            var descriptor = saber.SaberDescriptor;
         
-            var prefab = PrefabUtility.SaveAsPrefabAsset(descriptor.gameObject, assetName);
+            var prefab = PrefabUtility.SaveAsPrefabAsset(asset.GameObject, assetName);
             if (prefab == null)
             {
                 EditorUtility.DisplayDialog("Exportation Failed!", "Failed to create temporary prefab.", "OK");
@@ -72,25 +70,22 @@ namespace Editor
         
             var tempDir = new DirectoryInfo(TempDirPath);
         
-            if (string.IsNullOrWhiteSpace(descriptor.saberName))
-                warnings.Add($"{nameof(descriptor.saberName)} is empty.");
-            if (string.IsNullOrWhiteSpace(descriptor.authorName))
-                warnings.Add($"{nameof(descriptor.authorName)} is empty.");
+            if (string.IsNullOrWhiteSpace(asset.Name))
+                warnings.Add($"{nameof(asset.Name)} is empty.");
+            if (string.IsNullOrWhiteSpace(asset.Author))
+                warnings.Add($"{nameof(asset.Author)} is empty.");
 
-            var saberData = new AssetModel(imageFileName,
-                descriptor.saberName,
-                descriptor.authorName,
+            var assetModel = new AssetModel(imageFileName,
+                asset.Name,
+                asset.Author,
                 new() { { AssetPlatform.PC, new(pcAssetFileName) } }
             );
-            var jsonContent = JsonConvert.SerializeObject(saberData, new JsonSerializerSettings
+            var jsonContent = JsonConvert.SerializeObject(assetModel, new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
                 Formatting = Formatting.Indented
             });
-        
-            // Remove the descriptor from the prefab
-            Object.DestroyImmediate(prefab.GetComponent<SaberDescriptor>(), true);
-        
+            
             // Create asset bundle
             BuildPipeline.BuildAssetBundles(
                 tempDir.FullName,
@@ -107,7 +102,7 @@ namespace Editor
             // Create cover image file
             var imageFilePath = Path.Combine(tempDir.FullName, imageFileName);
             var imageFile = new FileInfo(imageFilePath);
-            warnings.AddRange(WriteCoverImageFile(imageFile, descriptor));
+            warnings.AddRange(WriteCoverImageFile(imageFile, asset.AssetIcon));
         
             // Create metadata file
             var metaDataPath = Path.Combine(tempDir.FullName, metadataFileName);
@@ -115,7 +110,7 @@ namespace Editor
             using (var streamWriter = metadataFile.CreateText()) streamWriter.Write(jsonContent);
         
             // Create zip
-            var outputFileName = Settings.GetExportFilename(saberData.ModelName);
+            var outputFileName = Settings.GetExportFilename(assetModel.ModelName) + asset.FileFormat;
             var outputFile = new FileInfo(Path.Combine(tempDir.FullName, outputFileName));
             if (outputFile.Exists) outputFile.Delete();
 
@@ -127,44 +122,42 @@ namespace Editor
                     archive.CreateEntryFromFile(imageFile.FullName, imageFile.Name);
             }
         
-            // Move the zip to CustomSabers
-            var customSabersDir = new DirectoryInfo(Path.Combine(Settings.beatSaberPath, "CustomSabers"));
-            if (!customSabersDir.Exists) customSabersDir.Create();
-            var customSabersFile = new FileInfo(Path.Combine(customSabersDir.FullName, outputFile.Name));
-            outputFile.CopyTo(customSabersFile.FullName, true);
+            var bsDir = new DirectoryInfo(Path.Combine(Settings.beatSaberPath, asset.TargetBeatSaberDir));
+            if (!bsDir.Exists) bsDir.Create();
+            var bsFile = new FileInfo(Path.Combine(bsDir.FullName, outputFile.Name));
+            outputFile.CopyTo(bsFile.FullName, true);
 
-            Selection.activeObject = saber.GameObject;
-            EditorUtility.SetDirty(saber.SaberDescriptor);
-            EditorSceneManager.MarkSceneDirty(saber.GameObject.scene);
-            EditorSceneManager.SaveScene(saber.GameObject.scene);
+            Selection.activeObject = asset.GameObject;
+            // EditorUtility.SetDirty();
+            EditorSceneManager.MarkSceneDirty(asset.GameObject.scene);
+            EditorSceneManager.SaveScene(asset.GameObject.scene);
 
-            PrefabUtility.SaveAsPrefabAsset(saber.GameObject, assetName);
+            PrefabUtility.SaveAsPrefabAsset(asset.GameObject, assetName);
         
             EditorUtility.DisplayDialog("Exportation Successful!",
                 warnings.Count == 0 ? "Exportation Successful!" : $"Warnings:\n - {string.Join("\n - ", warnings)}",
                 "OK");
         }
 
-        private static IEnumerable<string> WriteCoverImageFile(FileInfo imageFile, SaberDescriptor descriptor)
+        private static IEnumerable<string> WriteCoverImageFile(FileInfo imageFile, Texture2D tex)
         {
-            var source = descriptor.coverImage;
-            if (!source) yield break;
-            if (!source.isReadable)
+            if (!tex) yield break;
+            if (!tex.isReadable)
             {
-                yield return $"Assigned texture for {nameof(descriptor.coverImage)} is not readable. " +
+                yield return $"Assigned texture for {nameof(tex)} is not readable. " +
                              "Go to texture's import settings -> advanced -> enable Read/Write.";
                 yield break;
             }
         
-            var renderTexture = RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.ARGB32);
+            var renderTexture = RenderTexture.GetTemporary(tex.width, tex.height, 0, RenderTextureFormat.ARGB32);
             var previous = RenderTexture.active;
         
             try
             {
-                Graphics.Blit(source, renderTexture);
+                Graphics.Blit(tex, renderTexture);
                 RenderTexture.active = renderTexture;
-                var copy = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
-                copy.ReadPixels(new(0, 0, source.width, source.height), 0, 0);
+                var copy = new Texture2D(tex.width, tex.height, TextureFormat.RGBA32, false);
+                copy.ReadPixels(new(0, 0, tex.width, tex.height), 0, 0);
                 copy.Apply();
 
                 var iconData = copy.EncodeToPNG();

@@ -48,4 +48,12 @@ public static class UITools
 
         return pressed;
     }
+
+    public static void BoldLabel(string msg, Color clr)
+    {
+        var oldColor = GUI.color;
+        GUI.color = clr;
+        GUILayout.Label(msg, EditorStyles.boldLabel);
+        GUI.color = oldColor;
+    }
 }
