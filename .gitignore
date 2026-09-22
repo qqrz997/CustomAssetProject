@@ -38,3 +38,8 @@ sysinfo.txt
 
 SaberProjectSettings.asset
 Assets/_CustomSaber.prefab
+Assets/Editor/Common/UnityFS.cs
+Assets/Editor/BombWireFrameWindow.cs
+Assets/Editor/Common/MeshParser.cs
+Assets/Editor/MeshFileRenderer.cs
+Assets/Editor/MeshTextFileReader.cs
