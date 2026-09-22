@@ -55,6 +55,7 @@ internal static class ProjectSettingsRegister
         
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.PropertyField(settings.FindProperty(nameof(ProjectSettings.showOverlay)), new GUIContent("Show Overlay"));
+        EditorGUILayout.Slider(settings.FindProperty(nameof(ProjectSettings.guidesTransparency)), 0.075f, 1f);
         EditorGUILayout.EndVertical();
 
         EditorGUILayout.BeginVertical("box");

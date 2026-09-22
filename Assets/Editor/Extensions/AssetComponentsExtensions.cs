@@ -1,9 +1,9 @@
-﻿using SaberComponents.Components;
-using SaberComponents.Models;
+﻿using AssetComponents.Components;
+using AssetComponents.Models;
 
 namespace Editor.Extensions
 {
-    internal static class SaberComponentsExtensions
+    internal static class AssetComponentsExtensions
     {
         public static void MirrorColorType(this MaterialColorer instance)
         {

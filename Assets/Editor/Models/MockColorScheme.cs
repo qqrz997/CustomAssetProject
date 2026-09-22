@@ -1,5 +1,5 @@
 ﻿using System;
-using SaberComponents.Models;
+using AssetComponents.Models;
 using UnityEngine;
 
 namespace Editor.Models

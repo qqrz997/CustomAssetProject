@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using AssetComponents.Components;
+using AssetComponents.Components.Sabers;
+using AssetComponents.Models;
 using Editor.Extensions;
-using SaberComponents.Components;
-using SaberComponents.Models;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -14,7 +15,7 @@ public class SaberTools : EditorWindow
     public const float SaberLength = 1.179f;
     private const float SaberOffset = 0.1745f;
 
-    private string templateText = "NewSaber";
+    private string templateName = "NewSaber";
     private GameObject templatePrefab;
     private Material trailMaterial;
     private float trailLength = 0.4f;
@@ -35,8 +36,8 @@ public class SaberTools : EditorWindow
         scrollPos = GUILayout.BeginScrollView(scrollPos);
 
         UITools.Header("Visuals");
-        UITools.ChangedToggle(ref Settings.showSaberGuides, "Saber Guides", _ => SceneView.RepaintAll());
-        if (Settings.showSaberGuides) 
+        UITools.ChangedToggle(ref Settings.showGuides, "Show Guides", _ => SceneView.RepaintAll());
+        if (Settings.showGuides) 
             UITools.ChangedToggle(ref Settings.showTrailGuides, "Trail Guides", _ => SceneView.RepaintAll());
         
         GUILayout.Space(10);
@@ -51,7 +52,7 @@ public class SaberTools : EditorWindow
 
         GUILayout.Space(15);
         UITools.Header("Create Saber");
-        templateText = EditorGUILayout.TextField("Name", templateText);
+        templateName = EditorGUILayout.TextField("Name", templateName);
         templatePrefab =
             (GameObject) EditorGUILayout.ObjectField("Template Prefab", templatePrefab, typeof(GameObject), false);
         GUILayout.Space(10);
@@ -85,10 +86,10 @@ public class SaberTools : EditorWindow
     
     private void CreateTemplate()
     {
-        var rootGo = new GameObject(templateText);
+        var rootGo = new GameObject(templateName);
         var saberDescriptor = rootGo.AddComponent<SaberDescriptor>();
-        saberDescriptor.SaberName = templateText;
-        saberDescriptor.AuthorName = Settings.author;
+        saberDescriptor.saberName = templateName;
+        saberDescriptor.authorName = Settings.author;
         
         CreateSaber(rootGo.transform, ColorSchemeType.LeftSaber, -0.3f);
         CreateSaber(rootGo.transform, ColorSchemeType.RightSaber, 0.3f);
@@ -100,7 +101,7 @@ public class SaberTools : EditorWindow
     [DrawGizmo(GizmoType.Selected | GizmoType.NonSelected)]
     private static void DrawGizmos(SaberDescriptor descriptor, GizmoType gizmoType)
     {
-        if (Settings == null || !Settings.showSaberGuides)
+        if (!Settings.showGuides)
         {
             return;
         }
@@ -114,6 +115,7 @@ public class SaberTools : EditorWindow
 
     private static void DrawSaberGizmo(Transform t, Color color)
     {
+        color.a = Settings.guidesTransparency;
         Gizmos.color = color;
         Gizmos.DrawWireCube(t.position+new Vector3(0, 0, SaberLength/2-SaberOffset), new(0.05f, 0.05f, SaberLength));
 

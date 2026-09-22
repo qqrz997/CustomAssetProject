@@ -1,4 +1,4 @@
-using SaberComponents.Components;
+using AssetComponents.Components;
 using UnityEditor;
 using UnityEngine;
 
@@ -35,9 +35,9 @@ public class MaterialColorerPreviewer
     private static void ApplyPreview(MaterialColorer colorer)
     {
         if (colorer == null) return;
-        colorer.materialPropertyBlock ??= new();
-        colorer.materialPropertyBlock.SetColor(colorer.propertyName,
+        colorer.MaterialPropertyBlock ??= new();
+        colorer.MaterialPropertyBlock.SetColor(colorer.propertyName,
             Settings.colorScheme.ColorForType(colorer.colorSchemeType));
-        colorer.meshRenderer.SetPropertyBlock(colorer.materialPropertyBlock);
+        colorer.meshRenderer.SetPropertyBlock(colorer.MaterialPropertyBlock);
     }
 }

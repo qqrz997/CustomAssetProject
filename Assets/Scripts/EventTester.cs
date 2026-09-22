@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SaberComponents.Components;
+using AssetComponents.Components.Sabers;
 using UnityEngine;
 
 public class EventTester : MonoBehaviour

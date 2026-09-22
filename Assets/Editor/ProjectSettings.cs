@@ -15,18 +15,21 @@ internal class ProjectSettings : ScriptableObject
     [SerializeField] public string exportFilename = "{ModelName}";
     [SerializeField] public bool showOverlay = true;
 
-    [SerializeField] public bool showSaberGuides = true;
+    [SerializeField] public bool showGuides = true;
+    [SerializeField] public float guidesTransparency = 0.3f;
+    
     [SerializeField] public bool showTrailGuides = true;
     [SerializeField] public bool showTrailPreview = true;
     [SerializeField] public float trailPreviewLength = 0.3f;
-    [SerializeField] public MockColorScheme colorScheme = new();
     
+    [SerializeField] public MockColorScheme colorScheme = new();
+
     internal static SerializedObject GetSerializedSettings() => 
         new(GetOrCreateSettings());
 
     internal static void OpenSettingsScreen()
     {
-        SettingsService.OpenProjectSettings("Project/BS Model Toolkit");
+        SettingsService.OpenProjectSettings("Project/BS Asset Project");
     }
     
     internal static ProjectSettings GetOrCreateSettings()

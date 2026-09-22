@@ -1,7 +1,8 @@
 ﻿using System.Linq;
+using Editor;
 using Editor.Extensions;
 using Editor.Models;
-using SaberComponents.Components;
+using AssetComponents.Components.Sabers;
 using UnityEditor;
 using UnityEngine;
 
@@ -40,8 +41,8 @@ public class ModelExporterWindow : EditorWindow
 
             GUILayout.Space(5);
 
-            saber.SaberDescriptor.AuthorName = EditorGUILayout.TextField("Author name", saber.SaberDescriptor.AuthorName);
-            saber.SaberDescriptor.SaberName = EditorGUILayout.TextField("Saber name", saber.SaberDescriptor.SaberName);
+            saber.SaberDescriptor.authorName = EditorGUILayout.TextField("Author name", saber.SaberDescriptor.authorName);
+            saber.SaberDescriptor.saberName = EditorGUILayout.TextField("Saber name", saber.SaberDescriptor.saberName);
 
             EditorGUI.BeginDisabledGroup(!(saber.LeftSaber && saber.RightSaber));
 

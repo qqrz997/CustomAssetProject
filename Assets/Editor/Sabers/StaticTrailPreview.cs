@@ -1,4 +1,4 @@
-﻿using SaberComponents.Components;
+﻿using AssetComponents.Components.Sabers;
 using UnityEditor;
 using UnityEngine;
 
