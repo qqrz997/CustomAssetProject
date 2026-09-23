@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using AssetComponents.Components;
 using AssetComponents.Components.Sabers;
 using AssetComponents.Models;
@@ -155,7 +157,9 @@ public class SaberTools : EditorWindow
         trail.length = length;
         
         var colorer = parent.AddComponent<TrailColorer>();
-        colorer.GetType().GetField("colorSchemeType")?.SetValue(colorer, type);
+        var field = colorer.GetType().GetField("colorSchemeType", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new NullReferenceException();
+        field.SetValue(colorer, type);
 
         var trailGuides = new GameObject("Trail Guides").transform;
         trailGuides.parent = parent.transform;
