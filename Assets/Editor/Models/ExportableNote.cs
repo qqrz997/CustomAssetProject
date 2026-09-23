@@ -1,5 +1,6 @@
 ﻿using System;
 using AssetComponents.Components.Notes;
+using AssetComponents.Models;
 using UnityEngine;
 
 namespace Editor.Models
@@ -15,7 +16,7 @@ namespace Editor.Models
         
         public string TargetBeatSaberDir => "CustomNotes";
         public string FileFormat => ".bloq2";
-        public string PrefabName => "CustomNote";
+        public string PrefabName => AssetBundleDefinition.NoteAssetName;
 
         public GameObject GameObject => noteDescriptor.gameObject;
         

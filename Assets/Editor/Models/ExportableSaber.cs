@@ -1,4 +1,5 @@
 ﻿using AssetComponents.Components.Sabers;
+using AssetComponents.Models;
 using UnityEngine;
 
 namespace Editor.Models
@@ -18,7 +19,7 @@ namespace Editor.Models
 
         public string TargetBeatSaberDir => "CustomSabers";
         public string FileFormat => ".saber2";
-        public string PrefabName => "CustomSaber";
+        public string PrefabName => AssetBundleDefinition.SaberAssetName;
 
         public GameObject GameObject => saberDescriptor.gameObject;
         
