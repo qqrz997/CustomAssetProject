@@ -35,9 +35,8 @@ public class MaterialColorerPreviewer
     private static void ApplyPreview(MaterialColorer colorer)
     {
         if (colorer == null) return;
-        colorer.MaterialPropertyBlock ??= new();
-        colorer.MaterialPropertyBlock.SetColor(colorer.propertyName,
-            Settings.colorScheme.ColorForType(colorer.colorSchemeType));
-        colorer.meshRenderer.SetPropertyBlock(colorer.MaterialPropertyBlock);
+        colorer.MaterialPropertyBlock.SetColor(colorer.PropertyName,
+            Settings.colorScheme.ColorForType(colorer.ColorSchemeType));
+        colorer.UpdateRendererProperties();
     }
 }

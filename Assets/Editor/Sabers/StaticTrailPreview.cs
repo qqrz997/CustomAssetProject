@@ -1,4 +1,5 @@
-﻿using AssetComponents.Components.Sabers;
+﻿using AssetComponents.Components;
+using AssetComponents.Components.Sabers;
 using UnityEditor;
 using UnityEngine;
 
@@ -42,7 +43,7 @@ public class StaticTrailPreview : UnityEditor.Editor
     private static void DrawGizmo(CustomTrail trail, GizmoType gizmoType)
     {
         if (!Settings.showTrailPreview 
-            || !mesh || !trail.material || !trail.bottom || !trail.top)
+            || !mesh || trail.materials == null || !trail.bottom || !trail.top)
         {
             return;
         }
@@ -56,13 +57,14 @@ public class StaticTrailPreview : UnityEditor.Editor
         vertices[2] = top;
         vertices[3] = top + offset;
 
-        var color = (trail.useTrailColor ? trail.trailColor : Settings.colorScheme.ColorForType(trail.colorSchemeType)) 
-                    * trail.multiplierColor;
+        var colorer = trail.GetComponent<TrailColorer>();
+        var color = !colorer ? trail.trailColor : Settings.colorScheme.ColorForType(colorer.ColorSchemeType);
+        color *= trail.multiplierColor;
         for (int i = 0; i < Colors.Length; i++) Colors[i] = color;
 
         UpdateMesh();
 
-        trail.material.SetPass(0);
+        foreach (var material in trail.materials) material.SetPass(0);
         Graphics.DrawMeshNow(mesh, trail.bottom.parent.localToWorldMatrix);
     }
 

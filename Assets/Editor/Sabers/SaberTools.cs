@@ -151,9 +151,11 @@ public class SaberTools : EditorWindow
     private static void CreateTrail(GameObject parent, Material mat, float length, float width, ColorSchemeType type)
     {
         var trail = parent.AddComponent<CustomTrail>();
-        trail.material = mat;
+        trail.materials = new[] { mat };
         trail.length = length;
-        trail.colorSchemeType = type;
+        
+        var colorer = parent.AddComponent<TrailColorer>();
+        colorer.GetType().GetField("colorSchemeType")?.SetValue(colorer, type);
 
         var trailGuides = new GameObject("Trail Guides").transform;
         trailGuides.parent = parent.transform;
