@@ -43,7 +43,7 @@ public class StaticTrailPreview : UnityEditor.Editor
     private static void DrawGizmo(CustomTrail trail, GizmoType gizmoType)
     {
         if (!Settings.showTrailPreview 
-            || !mesh || trail.materials == null || !trail.bottom || !trail.top)
+            || !mesh || trail.material == null || !trail.bottom || !trail.top)
         {
             return;
         }
@@ -64,7 +64,7 @@ public class StaticTrailPreview : UnityEditor.Editor
 
         UpdateMesh();
 
-        foreach (var material in trail.materials) material.SetPass(0);
+        trail.material.SetPass(0);
         Graphics.DrawMeshNow(mesh, trail.bottom.parent.localToWorldMatrix);
     }
 
