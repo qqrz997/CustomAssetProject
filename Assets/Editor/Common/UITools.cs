@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public static class UITools
 {
@@ -55,5 +58,19 @@ public static class UITools
         GUI.color = clr;
         GUILayout.Label(msg, EditorStyles.boldLabel);
         GUI.color = oldColor;
+    }
+
+    public static void SelectAllRenderers()
+    {
+        var go = Selection.activeGameObject;
+        if (go)
+        {
+            var gos = new List<GameObject>();
+            foreach (var meshRenderer in go.GetComponentsInChildren<MeshRenderer>())
+            {
+                gos.Add(meshRenderer.gameObject);
+            }
+            Selection.objects = gos.Cast<Object>().ToArray();
+        }
     }
 }

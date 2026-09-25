@@ -71,16 +71,7 @@ public class SaberTools : EditorWindow
         UITools.Header("Other tools");
         if (UITools.Button("Select all renderers"))
         {
-            var go = Selection.activeGameObject;
-            if (go)
-            {
-                var gos = new List<GameObject>();
-                foreach (var meshRenderer in go.GetComponentsInChildren<MeshRenderer>())
-                {
-                    gos.Add(meshRenderer.gameObject);
-                }
-                Selection.objects = gos.Cast<Object>().ToArray();
-            }
+            UITools.SelectAllRenderers();
         }
 
         GUILayout.EndScrollView();
