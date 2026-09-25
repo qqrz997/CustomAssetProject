@@ -24,7 +24,7 @@ public class ConditionalFieldDrawer : PropertyDrawer
 
         object value = source.propertyType is SerializedPropertyType.ObjectReference ? source.objectReferenceValue : null;
 
-        var condition = (ICondition)Activator.CreateInstance(attribute.ConditionType);
+        var condition = (ConditionalFieldAttribute.ICondition)Activator.CreateInstance(attribute.ConditionType);
         return condition.GetState(value);
     }
 }
