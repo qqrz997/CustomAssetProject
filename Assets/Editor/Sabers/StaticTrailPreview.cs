@@ -1,5 +1,4 @@
-﻿using AssetComponents.Components;
-using AssetComponents.Components.Sabers;
+﻿using AssetComponents.Components.Sabers;
 using UnityEditor;
 using UnityEngine;
 
@@ -63,9 +62,14 @@ public class StaticTrailPreview : UnityEditor.Editor
         for (int i = 0; i < Colors.Length; i++) Colors[i] = color;
 
         UpdateMesh();
-
-        foreach (var material in trail.materials) material.SetPass(0);
-        Graphics.DrawMeshNow(mesh, trail.bottom.parent.localToWorldMatrix);
+        
+        var matrix = trail.bottom.parent.localToWorldMatrix;
+        foreach (var material in trail.materials)
+        {
+            if (!material) continue;
+            material.SetPass(0);
+            Graphics.DrawMeshNow(mesh, matrix);
+        }
     }
 
     private static void UpdateMesh()
