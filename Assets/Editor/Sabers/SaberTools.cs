@@ -148,10 +148,9 @@ public class SaberTools : EditorWindow
         trail.length = length;
         
         var colorer = parent.AddComponent<TrailColorer>();
-        var field = colorer.GetType().GetField("colorSchemeType", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new NullReferenceException();
-        field.SetValue(colorer, type);
-
+        colorer.SetField("customTrail", trail);
+        colorer.SetField("colorSchemeType", type);
+        
         var trailGuides = new GameObject("Trail Guides").transform;
         trailGuides.parent = parent.transform;
         trailGuides.localPosition = Vector3.zero;

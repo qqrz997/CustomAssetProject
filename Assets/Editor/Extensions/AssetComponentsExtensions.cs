@@ -9,7 +9,7 @@ namespace Editor.Extensions
     {
         public static void MirrorColorType(this MaterialColorer instance)
         {
-            var mirrored = instance.ColorSchemeType switch
+            instance.SetField("colorSchemeType", instance.ColorSchemeType switch
             {
                 ColorSchemeType.LeftSaber => ColorSchemeType.RightSaber,
                 ColorSchemeType.RightSaber => ColorSchemeType.LeftSaber,
@@ -18,11 +18,7 @@ namespace Editor.Extensions
                 ColorSchemeType.EnvironmentColor0Boost => ColorSchemeType.EnvironmentColor1Boost,
                 ColorSchemeType.EnvironmentColor1Boost => ColorSchemeType.EnvironmentColor0Boost,
                 _ => instance.ColorSchemeType
-            };
-            var fieldInfo = instance.GetType()
-                .GetField("colorSchemeType", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?? throw new NullReferenceException();
-            fieldInfo.SetValue(instance, mirrored);
+            });
         }
     }
 }
