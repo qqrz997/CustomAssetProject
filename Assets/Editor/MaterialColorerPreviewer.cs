@@ -37,6 +37,6 @@ public class MaterialColorerPreviewer
         if (colorer == null) return;
         colorer.MaterialPropertyBlock.SetColor(colorer.PropertyName,
             Settings.colorScheme.ColorForType(colorer.ColorSchemeType));
-        colorer.UpdateRendererProperties();
+        colorer.UpdatePropertyBlock();
     }
 }
