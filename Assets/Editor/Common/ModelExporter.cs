@@ -102,8 +102,9 @@ namespace Editor.Common
             // Create cover image file
             var imageFilePath = Path.Combine(tempDir.FullName, imageFileName);
             var imageFile = new FileInfo(imageFilePath);
-            warnings.AddRange(WriteCoverImageFile(imageFile, asset.AssetIcon));
-        
+            if (asset.AssetIcon) warnings.AddRange(WriteAssetIconFile(imageFile, asset.AssetIcon));
+            else warnings.Add("No asset icon has been provided.");
+
             // Create metadata file
             var metaDataPath = Path.Combine(tempDir.FullName, metadataFileName);
             var metadataFile = new FileInfo(metaDataPath);
@@ -139,12 +140,11 @@ namespace Editor.Common
                 "OK");
         }
 
-        private static IEnumerable<string> WriteCoverImageFile(FileInfo imageFile, Texture2D tex)
+        private static IEnumerable<string> WriteAssetIconFile(FileInfo imageFile, Texture2D tex)
         {
-            if (!tex) yield break;
             if (!tex.isReadable)
             {
-                yield return $"Assigned texture for {nameof(tex)} is not readable. " +
+                yield return "Failed to write icon image: assigned texture is not readable. " +
                              "Go to texture's import settings -> advanced -> enable Read/Write.";
                 yield break;
             }

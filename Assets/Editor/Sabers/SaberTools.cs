@@ -18,7 +18,8 @@ public class SaberTools : EditorWindow
     private const float SaberOffset = 0.1745f;
 
     private string templateName = "NewSaber";
-    private GameObject templatePrefab;
+    private GameObject leftTemplate;
+    private GameObject rightTemplate;
     private Material trailMaterial;
     private float trailLength = 0.4f;
     private float trailWidth = 0.5f;
@@ -55,8 +56,10 @@ public class SaberTools : EditorWindow
         GUILayout.Space(15);
         UITools.Header("Create Saber");
         templateName = EditorGUILayout.TextField("Name", templateName);
-        templatePrefab =
-            (GameObject) EditorGUILayout.ObjectField("Template Prefab", templatePrefab, typeof(GameObject), false);
+        leftTemplate =
+            (GameObject)EditorGUILayout.ObjectField("Left Saber Prefab", leftTemplate, typeof(GameObject), false);
+        rightTemplate =
+            (GameObject)EditorGUILayout.ObjectField("Right Saber Prefab", rightTemplate, typeof(GameObject), false);
         GUILayout.Space(10);
         trailMaterial = (Material) EditorGUILayout.ObjectField("Trail Material", trailMaterial, typeof(Material), false);
         trailLength = EditorGUILayout.Slider("Trail Length", trailLength, 0f, 1f);
@@ -84,8 +87,9 @@ public class SaberTools : EditorWindow
         saberDescriptor.saberName = templateName;
         saberDescriptor.authorName = Settings.author;
         
-        CreateSaber(rootGo.transform, ColorSchemeType.LeftSaber, -0.3f);
-        CreateSaber(rootGo.transform, ColorSchemeType.RightSaber, 0.3f);
+        saberDescriptor.leftSaber = CreateSaber(rootGo.transform, leftTemplate, ColorSchemeType.LeftSaber, -0.3f);
+        if (rightTemplate)
+            saberDescriptor.rightSaber = CreateSaber(rootGo.transform, rightTemplate, ColorSchemeType.RightSaber, 0.3f);
 
         MaterialColorerPreviewer.RefreshAll();
         Selection.activeGameObject = rootGo;
@@ -129,16 +133,17 @@ public class SaberTools : EditorWindow
             new(gizmoWidth, 0.05f, trailWidth));
     }
         
-    private void CreateSaber(Transform parent, ColorSchemeType colorType, float spacing)
+    private GameObject CreateSaber(Transform parent, GameObject template, ColorSchemeType colorType, float spacing)
     {
         var go = new GameObject(colorType.ToString());
         go.transform.SetParent(parent, false);
         go.transform.position = new(spacing, 0, 0);
         CreateTrail(go, trailMaterial, trailLength, trailWidth, colorType);
-        if (!templatePrefab) return;
-        var instance = Instantiate(templatePrefab, go.transform, false);
+        if (!template) return go;
+        var instance = (GameObject)PrefabUtility.InstantiatePrefab(template, go.transform);
         if (colorType == ColorSchemeType.RightSaber)
             foreach (var colorer in instance.GetComponentsInChildren<MaterialColorer>()) colorer.MirrorColorType();
+        return go;
     }
 
     private static void CreateTrail(GameObject parent, Material mat, float length, float width, ColorSchemeType type)
