@@ -12,6 +12,7 @@ public class ModelExporterWindow : EditorWindow
     
     private readonly List<ExportableSaber> sabers = new();
     private Vector2 scrollPosition = Vector2.zero;
+    private bool isExporting;
 
     [MenuItem("Window/BS Asset Project/Exporter")]
     public static void ShowWindow()
@@ -21,6 +22,8 @@ public class ModelExporterWindow : EditorWindow
     
     private void OnFocus()
     {
+        if (isExporting) return;
+        
         sabers.Clear();
         foreach (var saber in FindObjectsByType<SaberDescriptor>(FindObjectsSortMode.None))
         {
@@ -59,7 +62,7 @@ public class ModelExporterWindow : EditorWindow
         EditorGUI.EndDisabledGroup();
     }
 
-    private static void DrawSaberExportBox(ExportableSaber exportableSaber)
+    private void DrawSaberExportBox(ExportableSaber exportableSaber)
     {
         UITools.CenterHeader(exportableSaber.Name, Color.white);
         GUILayout.BeginVertical("box");
@@ -92,7 +95,8 @@ public class ModelExporterWindow : EditorWindow
         if (GUILayout.Button("Export", GUILayout.Height(25)))
         {
             GUI.color = Color.white;
-            ModelExporter.ExportAsset(exportableSaber);
+            isExporting = true;
+            ModelExporter.ExportAsset(exportableSaber, onComplete: () => isExporting = false);
         }
         GUI.color = Color.white;
 

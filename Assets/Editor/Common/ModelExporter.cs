@@ -19,7 +19,7 @@ namespace Editor.Common
     
         private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
 
-        public static void ExportAsset(IExportableAsset asset)
+        public static void ExportAsset(IExportableAsset asset, Action onComplete)
         {
             var tempDir = new DirectoryInfo(TempDirPath);
         
@@ -43,6 +43,7 @@ namespace Editor.Common
             finally
             {
                 if (tempDir.Exists) tempDir.Delete(true);
+                onComplete?.Invoke();
             }
         }
     
