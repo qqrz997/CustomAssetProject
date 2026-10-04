@@ -22,7 +22,7 @@ public class SaberTools : EditorWindow
     private GameObject rightTemplate;
     private Material trailMaterial;
     private float trailLength = 0.4f;
-    private float trailWidth = 0.5f;
+    private float trailWidth = 1f;
     
     private Vector2 scrollPos = Vector2.zero;
 
