@@ -27,7 +27,7 @@ namespace Editor.Models
         public string FileFormat => ".saber2";
         public string PrefabName => AssetBundleDefinition.SaberAssetName;
 
-        public GameObject GameObject => saberDescriptor.gameObject;
+        public GameObject GameObject => saberDescriptor ? saberDescriptor.gameObject : null;
         
         public string Name => saberDescriptor.saberName;
         public string Author => saberDescriptor.authorName;

@@ -23,7 +23,9 @@ public class ModelExporterWindow : EditorWindow
     {
         sabers.Clear();
         foreach (var saber in FindObjectsByType<SaberDescriptor>(FindObjectsSortMode.None))
-            sabers.Add(new(saber));
+        {
+            if (saber) sabers.Add(new(saber));
+        }
     }
     
     private void OnGUI()
