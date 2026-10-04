@@ -34,17 +34,20 @@ public class StaticTrailPreview : UnityEditor.Editor
 
     private void OnEnable()
     {
-        if (!mesh) mesh = new() { name = "TrailPreviewMesh" };
         UpdateMesh();
     }
 
     [DrawGizmo(GizmoType.Selected | GizmoType.NonSelected)]
     private static void DrawGizmo(CustomTrail trail, GizmoType gizmoType)
     {
-        if (!Settings.showTrailPreview 
-            || !mesh || trail.materials == null || !trail.bottom || !trail.top)
+        if (!Settings.showTrailPreview || trail.materials == null || !trail.bottom || !trail.top)
         {
             return;
+        }
+
+        if (!mesh)
+        {
+            mesh = new() { name = "TrailPreviewMesh" };
         }
 
         var bot = trail.bottom.localPosition;
