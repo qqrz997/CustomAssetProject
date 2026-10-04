@@ -9,14 +9,18 @@ namespace Editor.Models
 {
     internal sealed class ExportableSaber : IExportableAsset
     {
-        private readonly SaberDescriptor saberDescriptor;
+        private readonly GameObject leftSaberObject;
         
         private readonly bool hasTrail;
         private readonly bool hasSaberTransforms;
         
         public ExportableSaber(SaberDescriptor descriptor)
         {
-            saberDescriptor = descriptor;
+            Name = descriptor.name;
+            Author = descriptor.authorName;
+            AssetIcon = descriptor.coverImage;
+            GameObject = descriptor.gameObject;
+            leftSaberObject = descriptor.leftSaber;
             hasTrail = GameObject.GetComponentInChildren<CustomTrail>();
             var (leftSaber, rightSaber) = (GameObject.transform.Find("LeftSaber"), GameObject.transform.Find("RightSaber"));
             hasSaberTransforms = leftSaber && !IsTransformClear(leftSaber) 
@@ -27,13 +31,13 @@ namespace Editor.Models
         public string FileFormat => ".saber2";
         public string PrefabName => AssetBundleDefinition.SaberAssetName;
 
-        public GameObject GameObject => saberDescriptor ? saberDescriptor.gameObject : null;
-        
-        public string Name => saberDescriptor.saberName;
-        public string Author => saberDescriptor.authorName;
-        public Texture2D AssetIcon => saberDescriptor.coverImage;
+        public GameObject GameObject { get; }
 
-        public bool IsReadyForExport => saberDescriptor.leftSaber;
+        public string Name { get; }
+        public string Author { get; }
+        public Texture2D AssetIcon { get; }
+
+        public bool IsReadyForExport => leftSaberObject != null;
         
         public IEnumerable<ValidationMessage> Validate()
         {

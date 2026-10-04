@@ -59,16 +59,17 @@ public class ModelExporterWindow : EditorWindow
         EditorGUI.EndDisabledGroup();
     }
 
-    private void DrawSaberExportBox(ExportableSaber exportableSaber)
+    private static void DrawSaberExportBox(ExportableSaber exportableSaber)
     {
+        UITools.CenterHeader(exportableSaber.Name, Color.white);
+        GUILayout.BeginVertical("box");
+        
         if (!exportableSaber.GameObject)
         {
-            OnFocus();
+            UITools.BoldLabel($"Couldn't find saber object. Exporter needs to refresh.", ValidationMessage.ErrorColor);
+            GUILayout.EndVertical();
             return;
         }
-
-        UITools.CenterHeader(exportableSaber.GameObject.name, Color.white);
-        GUILayout.BeginVertical("box");
 
         var isWarning = false;
         foreach (var (message, color) in exportableSaber.Validate())
