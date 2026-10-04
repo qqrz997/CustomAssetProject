@@ -1,25 +1,13 @@
 using AssetComponents.Components;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-[InitializeOnLoad]
-public class MaterialColorerPreviewer
+[CustomEditor(typeof(MaterialColorer))]
+[CanEditMultipleObjects]
+public class MaterialColorerPreviewer : UnityEditor.Editor
 {
     private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
     
-    static MaterialColorerPreviewer()
-    {
-        EditorSceneManager.sceneOpened -= OnSceneOpened;
-        EditorSceneManager.sceneOpened += OnSceneOpened;
-        EditorApplication.delayCall += RefreshAll;
-        Undo.postprocessModifications -= OnPostprocessModifications;
-        Undo.postprocessModifications += OnPostprocessModifications;
-    }
-
-    private static void OnSceneOpened(Scene scene, OpenSceneMode mode) => RefreshAll();
-
     public static void RefreshAll()
     {
         EditorApplication.delayCall -= RefreshAll;
@@ -29,14 +17,10 @@ public class MaterialColorerPreviewer
         }
     }
 
-    private static UndoPropertyModification[] OnPostprocessModifications(UndoPropertyModification[] modifications)
+    [DrawGizmo(GizmoType.Selected | GizmoType.NonSelected)]
+    private static void DrawGizmo(MaterialColorer colorer, GizmoType gizmoType)
     {
-        foreach (var modification in modifications)
-        {
-            if (modification.currentValue.target is MaterialColorer materialColorer) ApplyPreview(materialColorer);
-        }
-
-        return modifications;
+        ApplyPreview(colorer);
     }
     
     private static void ApplyPreview(MaterialColorer colorer)

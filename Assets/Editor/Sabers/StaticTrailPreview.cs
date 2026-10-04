@@ -24,18 +24,6 @@ public class StaticTrailPreview : UnityEditor.Editor
     private static Vector3[] vertices = new Vector3[4];
 
     private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
-    
-    public override void OnInspectorGUI()
-    {
-        serializedObject.Update();
-        DrawPropertiesExcluding(serializedObject, "m_Script");
-        serializedObject.ApplyModifiedProperties();
-    }
-
-    private void OnEnable()
-    {
-        UpdateMesh();
-    }
 
     [DrawGizmo(GizmoType.Selected | GizmoType.NonSelected)]
     private static void DrawGizmo(CustomTrail trail, GizmoType gizmoType)
