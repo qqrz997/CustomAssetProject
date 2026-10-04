@@ -1,6 +1,8 @@
 using AssetComponents.Components;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [InitializeOnLoad]
 public class MaterialColorerPreviewer
@@ -9,13 +11,18 @@ public class MaterialColorerPreviewer
     
     static MaterialColorerPreviewer()
     {
+        EditorSceneManager.sceneOpened -= OnSceneOpened;
+        EditorSceneManager.sceneOpened += OnSceneOpened;
+        EditorApplication.delayCall += RefreshAll;
         Undo.postprocessModifications -= OnPostprocessModifications;
         Undo.postprocessModifications += OnPostprocessModifications;
-        RefreshAll();
     }
+
+    private static void OnSceneOpened(Scene scene, OpenSceneMode mode) => RefreshAll();
 
     public static void RefreshAll()
     {
+        EditorApplication.delayCall -= RefreshAll;
         foreach (var colorer in Resources.FindObjectsOfTypeAll<MaterialColorer>())
         {
             if (colorer.gameObject.scene.IsValid() && colorer.gameObject.scene.isLoaded) ApplyPreview(colorer);
