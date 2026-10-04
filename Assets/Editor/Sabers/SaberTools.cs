@@ -142,7 +142,7 @@ public class SaberTools : EditorWindow
         if (!template) return go;
         var instance = (GameObject)PrefabUtility.InstantiatePrefab(template, go.transform);
         if (colorType == ColorSchemeType.RightSaber)
-            foreach (var colorer in instance.GetComponentsInChildren<MaterialColorer>()) colorer.MirrorColorType();
+            foreach (var colorer in instance.GetComponentsInChildren<MaterialColorer>()) colorer.MirrorColorSchemeType();
         return go;
     }
 
