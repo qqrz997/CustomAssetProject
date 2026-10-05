@@ -9,7 +9,7 @@ public class NoteTools : EditorWindow
 {
     private static ProjectSettings Settings => ProjectSettings.GetOrCreateSettings();
     
-    private string templateName;
+    private string templateName = "NewNote";
     private bool createRightNotes;
     private bool createBomb;
     
@@ -53,12 +53,7 @@ public class NoteTools : EditorWindow
 
         descriptor.leftNotes = CreateNoteSet(rootGo.transform, "Left", -0.4f);
         if (createRightNotes) descriptor.rightNotes = CreateNoteSet(rootGo.transform, "Right", 0.4f);
-        if (createBomb)
-        {
-            var bomb = new GameObject("Bomb");
-            bomb.transform.SetParent(rootGo.transform, false);
-            bomb.transform.localPosition = new(-1.2f, 2.4f, 0f);
-        }
+        if (createBomb) descriptor.bomb = CreateBomb(rootGo.transform);
         
         MaterialColorerPreviewer.RefreshAll();
         Selection.activeGameObject = rootGo;
@@ -132,16 +127,16 @@ public class NoteTools : EditorWindow
         return (vertices, indices);
     }
     
-    static NoteSet CreateNoteSet(Transform parent, string name, float x)
+    private static NoteSet CreateNoteSet(Transform parent, string name, float x)
     {
         var noteSet = new GameObject(name).AddComponent<NoteSet>();
         noteSet.transform.SetParent(parent, false);
         noteSet.transform.localPosition = new(x, 0f, 0f);
         noteSet.noteArrow = CreateNote(noteSet.transform, "NoteArrow", 2.4f);
-        noteSet.noteArrow = CreateNote(noteSet.transform, "NoteDot", 1.8f);
-        noteSet.noteArrow = CreateNote(noteSet.transform, "ChainArrow", 1.2f);
-        noteSet.noteArrow = CreateNote(noteSet.transform, "ChainDot", 0.6f);
-        noteSet.noteArrow = CreateNote(noteSet.transform, "ChainSegment", 0f);
+        noteSet.noteDot = CreateNote(noteSet.transform, "NoteDot", 1.8f);
+        noteSet.chainArrow = CreateNote(noteSet.transform, "ChainArrow", 1.2f);
+        noteSet.chainDot = CreateNote(noteSet.transform, "ChainDot", 0.6f);
+        noteSet.chainSegment = CreateNote(noteSet.transform, "ChainSegment", 0f);
         return noteSet;
         static GameObject CreateNote(Transform parent, string name, float y)
         {
@@ -150,5 +145,13 @@ public class NoteTools : EditorWindow
             note.transform.localPosition =  new(0f, y, 0f);
             return note;
         }
+    }
+
+    private static GameObject CreateBomb(Transform parent)
+    {
+        var bomb = new GameObject("Bomb");
+        bomb.transform.SetParent(parent, false);
+        bomb.transform.localPosition = new(-1.2f, 2.4f, 0f);
+        return bomb;
     }
 }
