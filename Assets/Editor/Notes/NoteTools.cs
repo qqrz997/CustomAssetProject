@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using AssetComponents.Components.Notes;
@@ -23,11 +24,6 @@ public class NoteTools : EditorWindow
     public static void OpenNoteTools()
     {
         GetWindow<NoteTools>(false, "Note Tools");
-    }
-
-    private void OnEnable()
-    {
-        (bombVertices, bombIndices) = LoadBombMesh();
     }
 
     private void OnGUI()
@@ -101,6 +97,9 @@ public class NoteTools : EditorWindow
 
     private static void DrawBombGizmo(Transform parent)
     {
+        if (bombIndices == null || bombVertices == null)
+            (bombVertices, bombIndices) = LoadBombMesh();
+
         var oldColor = Gizmos.color;
         Gizmos.color = new(0.15f, 0.15f, 0.18f, Settings.guidesTransparency);
         Gizmos.matrix = parent.localToWorldMatrix;
@@ -119,11 +118,17 @@ public class NoteTools : EditorWindow
 
     private static (Vector3[] vertices, ushort[] indices) LoadBombMesh()
     {
-        var file = File.ReadAllLines(Path.Combine(Application.dataPath, "Editor", "Notes", "bombMesh.txt"));
-        var vertices = file.SkipLast(1)
+        var filePath = Path.Combine(Application.dataPath, "Editor", "Notes", "bombMesh.txt");
+        if (!File.Exists(filePath))
+        {
+            Debug.LogWarning("No bomb mesh file found");
+            return (Array.Empty<Vector3>(), Array.Empty<ushort>());
+        }
+        var lines = File.ReadAllLines(filePath);
+        var vertices = lines.SkipLast(1)
             .Select(l => l.Trim().Split(' '))
             .Select(l => new Vector3(float.Parse(l[0]), float.Parse(l[1]), float.Parse(l[2]))).ToArray();
-        var indices = file.Last().Trim().Split(' ').Select(ushort.Parse).ToArray();
+        var indices = lines.Last().Trim().Split(' ').Select(ushort.Parse).ToArray();
         return (vertices, indices);
     }
     
