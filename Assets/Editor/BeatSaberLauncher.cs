@@ -64,7 +64,7 @@ public class BeatSaberLauncher
         {
             FileName = Path.Combine(Settings.beatSaberPath, "Beat Saber.exe"),
             WorkingDirectory = Settings.beatSaberPath,
-            ArgumentList = { "--no-yeet", "--verbose", $"{console.Id}" ,"fpfc" },
+            ArgumentList = { "--no-yeet", "--verbose", $"{console.Id}" ,"fpfc", "--auto_play" },
             UseShellExecute = false,
             CreateNoWindow = false,
             Environment =
