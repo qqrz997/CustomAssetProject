@@ -1,19 +1,23 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using Editor.Common;
+using UnityEngine;
 
 namespace Editor.Models
 {
     internal interface IExportableAsset
     {
-        public string TargetBeatSaberDir { get; }
-        public string FileFormat { get; }
-        public string PrefabName { get; }
+        string TargetBeatSaberDir { get; }
+        string FileFormat { get; }
+        string PrefabName { get; }
         
-        public GameObject GameObject { get; }
+        GameObject GameObject { get; }
         
-        public string Name { get; }
-        public string Author { get; }
-        public Texture2D AssetIcon { get; }
+        string Name { get; }
+        string Author { get; }
+        Texture2D AssetIcon { get; }
         
-        public bool IsReadyForExport { get; }
+        bool IsReadyForExport { get; }
+
+        IEnumerable<ValidationMessage> Validate();
     }
 }
