@@ -8,11 +8,11 @@ namespace Editor.Models
 {
     internal sealed class ExportableNote : IExportableAsset
     {
-        private readonly NoteSet leftNotes;
+        private readonly GameObject leftNoteArrow;
         
         public ExportableNote(NoteDescriptor descriptor)
         {
-            leftNotes = descriptor.leftNotes;
+            leftNoteArrow = descriptor.leftNoteArrow;
             GameObject = descriptor.gameObject;
             Name = descriptor.name;
             Author = descriptor.authorName;
@@ -20,7 +20,7 @@ namespace Editor.Models
         }
         
         public string TargetBeatSaberDir => "CustomNotes";
-        public string FileFormat => ".bloq2";
+        public string FileFormat => ".note2";
         public string PrefabName => AssetBundleDefinition.NoteAssetName;
 
         public GameObject GameObject { get; }
@@ -29,7 +29,7 @@ namespace Editor.Models
         public string Author { get; }
         public Texture2D AssetIcon { get; }
 
-        public bool IsReadyForExport => leftNotes && leftNotes.noteArrow;
+        public bool IsReadyForExport => leftNoteArrow;
         public IEnumerable<ValidationMessage> Validate()
         {
             yield break;

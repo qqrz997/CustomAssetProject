@@ -51,8 +51,7 @@ public class NoteTools : EditorWindow
         descriptor.name = templateName;
         descriptor.authorName = Settings.author;
 
-        descriptor.leftNotes = CreateNoteSet(rootGo.transform, "Left", -0.4f);
-        if (createRightNotes) descriptor.rightNotes = CreateNoteSet(rootGo.transform, "Right", 0.4f);
+        SetupNoteSets(descriptor, createRightNotes);
         if (createBomb) descriptor.bomb = CreateBomb(rootGo.transform);
         
         MaterialColorerPreviewer.RefreshAll();
@@ -64,40 +63,41 @@ public class NoteTools : EditorWindow
     {
         if (!Settings.showGuides) return;
         
-        if (descriptor.leftNotes)
-            DrawNoteGizmos(descriptor.leftNotes, Settings.colorScheme.saberAColor);
-        if (descriptor.rightNotes)
-            DrawNoteGizmos(descriptor.rightNotes, Settings.colorScheme.saberBColor);
-        if (descriptor.bomb)
-            DrawBombGizmo(descriptor.bomb.transform);
+        DrawNoteGizmos(Settings.colorScheme.saberAColor, descriptor.leftNoteArrow, descriptor.leftNoteDot,
+            descriptor.leftChainArrow, descriptor.leftChainDot, descriptor.leftChainSegment);
+        DrawNoteGizmos(Settings.colorScheme.saberBColor, descriptor.rightNoteArrow, descriptor.rightNoteDot,
+            descriptor.rightChainArrow, descriptor.rightChainDot, descriptor.rightChainSegment);
+        DrawBombGizmo(descriptor.bomb);
     }
 
-    private static void DrawNoteGizmos(NoteSet notes, Color color)
+    private static void DrawNoteGizmos(Color color, GameObject noteArrow, GameObject noteDot, GameObject chainArrow,
+        GameObject chainDot, GameObject chainSegment)
     {
         var oldColor = Gizmos.color;
         color.a = Settings.guidesTransparency;
         Gizmos.color = color;
-        if (notes.noteArrow) 
-            Gizmos.DrawWireCube(notes.noteArrow.transform.position, new(NoteSize, NoteSize, NoteSize));
-        if (notes.noteDot)
-            Gizmos.DrawWireCube(notes.noteDot.transform.position, new(NoteSize, NoteSize, NoteSize));
-        if (notes.chainArrow)
-            Gizmos.DrawWireCube(notes.chainArrow.transform.position, new(NoteSize, ChainHeadHeight, NoteSize));
-        if (notes.chainDot)
-            Gizmos.DrawWireCube(notes.chainDot.transform.position, new(NoteSize, ChainHeadHeight, NoteSize));
-        if (notes.chainSegment)
-            Gizmos.DrawWireCube(notes.chainSegment.transform.position, new(NoteSize, ChainSegmentHeight, NoteSize));
+        if (noteArrow) 
+            Gizmos.DrawWireCube(noteArrow.transform.position, new(NoteSize, NoteSize, NoteSize));
+        if (noteDot)
+            Gizmos.DrawWireCube(noteDot.transform.position, new(NoteSize, NoteSize, NoteSize));
+        if (chainArrow)
+            Gizmos.DrawWireCube(chainArrow.transform.position, new(NoteSize, ChainHeadHeight, NoteSize));
+        if (chainDot)
+            Gizmos.DrawWireCube(chainDot.transform.position, new(NoteSize, ChainHeadHeight, NoteSize));
+        if (chainSegment)
+            Gizmos.DrawWireCube(chainSegment.transform.position, new(NoteSize, ChainSegmentHeight, NoteSize));
         Gizmos.color = oldColor;
     }
 
-    private static void DrawBombGizmo(Transform parent)
+    private static void DrawBombGizmo(GameObject parent)
     {
+        if (!parent) return;
         if (bombIndices == null || bombVertices == null)
             (bombVertices, bombIndices) = LoadBombMesh();
 
         var oldColor = Gizmos.color;
         Gizmos.color = new(0.15f, 0.15f, 0.18f, Settings.guidesTransparency);
-        Gizmos.matrix = parent.localToWorldMatrix;
+        Gizmos.matrix = parent.transform.localToWorldMatrix;
         for (var i = 0; i < bombIndices.Length; i += 3)
         {
             var a = bombVertices[bombIndices[i]];
@@ -127,17 +127,28 @@ public class NoteTools : EditorWindow
         return (vertices, indices);
     }
     
-    private static NoteSet CreateNoteSet(Transform parent, string name, float x)
+    private static void SetupNoteSets(NoteDescriptor descriptor, bool createRightNotes)
     {
-        var noteSet = new GameObject(name).AddComponent<NoteSet>();
-        noteSet.transform.SetParent(parent, false);
-        noteSet.transform.localPosition = new(x, 0f, 0f);
-        noteSet.noteArrow = CreateNote(noteSet.transform, "NoteArrow", 2.4f);
-        noteSet.noteDot = CreateNote(noteSet.transform, "NoteDot", 1.8f);
-        noteSet.chainArrow = CreateNote(noteSet.transform, "ChainArrow", 1.2f);
-        noteSet.chainDot = CreateNote(noteSet.transform, "ChainDot", 0.6f);
-        noteSet.chainSegment = CreateNote(noteSet.transform, "ChainSegment", 0f);
-        return noteSet;
+        var left = new GameObject("Left");
+        left.transform.SetParent(descriptor.transform, false);
+        left.transform.localPosition = new(-0.4f, 0f, 0f);
+        descriptor.leftNoteArrow = CreateNote(left.transform, "NoteArrow", 2.4f);
+        descriptor.leftNoteDot = CreateNote(left.transform, "NoteDot", 1.8f);
+        descriptor.leftChainArrow = CreateNote(left.transform, "ChainArrow", 1.2f);
+        descriptor.leftChainDot = CreateNote(left.transform, "ChainDot", 0.6f);
+        descriptor.leftChainSegment = CreateNote(left.transform, "ChainSegment", 0f);
+        if (createRightNotes)
+        {
+            var right = new GameObject("Right");
+            right.transform.SetParent(descriptor.transform, false);
+            right.transform.localPosition = new(0.4f, 0f, 0f);
+            descriptor.rightNoteArrow = CreateNote(right.transform, "NoteArrow", 2.4f);
+            descriptor.rightNoteDot = CreateNote(right.transform, "NoteDot", 1.8f);
+            descriptor.rightChainArrow = CreateNote(right.transform, "ChainArrow", 1.2f);
+            descriptor.rightChainDot = CreateNote(right.transform, "ChainDot", 0.6f);
+            descriptor.rightChainSegment = CreateNote(right.transform, "ChainSegment", 0f);
+        }
+        
         static GameObject CreateNote(Transform parent, string name, float y)
         {
             var note = new GameObject(name);
